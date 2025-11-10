@@ -1,0 +1,44 @@
+{
+  "name": "@joyboy/core",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Core SDK and runtime for the JoyBoy parser ecosystem",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "joyboy",
+    "manga",
+    "parser",
+    "core",
+    "sdk"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@joyboy/types": "workspace:*"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.0",
+    "vitest": "^1.0.0"
+  },
+  "peerDependencies": {
+    "@joyboy/types": "^1.0.0"
+  }
+}

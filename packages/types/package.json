@@ -1,0 +1,35 @@
+{
+  "name": "@joyboy/types",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "TypeScript type definitions for JoyBoy parser ecosystem",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "joyboy",
+    "manga",
+    "parser",
+    "types"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.0"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "name": "@joyboy/monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "clean": "turbo run clean",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "turbo run build && changeset publish"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.29.7",
+    "@types/node": "^20.19.24",
+    "tsup": "^8.5.0",
+    "turbo": "^1.13.4",
+    "typescript": "^5.9.3",
+    "vitest": "^1.6.1"
+  },
+  "packageManager": "pnpm@10.20.0",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

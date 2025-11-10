@@ -1,0 +1,27 @@
+{
+  "name": "@joyboy/source-template",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Template for creating new JoyBoy source parsers",
+  "bin": {
+    "create-joyboy-source": "./scripts/create.js"
+  },
+  "files": [
+    "template",
+    "scripts"
+  ],
+  "scripts": {
+    "test": "echo \"No tests specified\""
+  },
+  "keywords": [
+    "joyboy",
+    "template",
+    "parser"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "prompts": "^2.4.2",
+    "chalk": "^5.3.0"
+  }
+}
+

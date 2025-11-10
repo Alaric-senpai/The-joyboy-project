@@ -1,0 +1,17 @@
+[
+  {
+    "id": "mangadex",
+    "name": "MangaDex",
+    "version": "1.0.0",
+    "baseUrl": "https://example.com",
+    "packageName": "@joyboy/source-mangadex",
+    "description": "MangaDex parser for JoyBoy",
+    "official": true,
+    "tags": [
+      "mangadex"
+    ],
+    "repository": "https://github.com/yourusername/joyboy",
+    "installCommand": "npm install @joyboy/source-mangadex",
+    "lastUpdated": "2025-11-10T22:41:57.621Z"
+  }
+]

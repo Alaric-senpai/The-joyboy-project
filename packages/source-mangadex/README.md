@@ -1,4 +1,4 @@
-/*
+
 # @joyboy/source-mangadex
 
 MangaDex parser for the JoyBoy ecosystem.
@@ -7,11 +7,17 @@ MangaDex parser for the JoyBoy ecosystem.
 
 ```bash
 npm install @joyboy/source-mangadex
-# or
-pnpm add @joyboy/source-mangadex
-# or
-yarn add @joyboy/source-mangadex
 ```
+
+## Features
+
+- ✅ Search with filters
+- ✅ Manga details
+- ✅ Chapter lists
+- ✅ Page fetching
+- ✅ Latest updates
+- ✅ Popular manga
+- ✅ Multi-language support (10+ languages)
 
 ## Usage
 
@@ -20,23 +26,10 @@ yarn add @joyboy/source-mangadex
 ```typescript
 import { JoyBoy } from '@joyboy/core';
 
-// Load the source
 await JoyBoy.loadSource('@joyboy/source-mangadex');
-
-// Get the source
 const mangadex = JoyBoy.getSource('mangadex');
 
-// Search
 const results = await mangadex.search('One Piece');
-
-// Get manga details
-const manga = await mangadex.getMangaDetails(results[0].id);
-
-// Get chapters
-const chapters = await mangadex.getChapters(manga.id);
-
-// Get chapter pages
-const pages = await mangadex.getChapterPages(chapters[0].id);
 ```
 
 ### Direct Usage
@@ -45,27 +38,40 @@ const pages = await mangadex.getChapterPages(chapters[0].id);
 import MangaDexSource from '@joyboy/source-mangadex';
 
 const mangadex = new MangaDexSource();
-
 const results = await mangadex.search('Naruto');
-console.log(results);
 ```
 
-## Features
+## Supported Operations
 
-- ✅ Search manga
-- ✅ Get manga details
-- ✅ Get chapters
-- ✅ Get chapter pages
-- ✅ Get latest updates
-- ✅ Get popular manga
-- ✅ Filter by genre
-- ✅ Filter by status
+```typescript
+// Search
+await mangadex.search('query', {
+  page: 1,
+  limit: 20,
+  includedGenres: ['action'],
+  status: 'ongoing'
+});
 
-## API
+// Get manga details
+await mangadex.getMangaDetails('manga-id');
 
-See the [JoyBoy documentation](https://github.com/yourusername/joyboy) for full API details.
+// Get chapters
+await mangadex.getChapters('manga-id');
+
+// Get pages
+await mangadex.getChapterPages('chapter-id');
+
+// Get latest
+await mangadex.getLatest({ limit: 20 });
+
+// Get popular
+await mangadex.getPopular({ limit: 20 });
+```
+
+## Supported Languages
+
+English, Japanese, Spanish, French, German, Portuguese, Russian, Chinese, Korean, Italian
 
 ## License
 
 MIT
-*/

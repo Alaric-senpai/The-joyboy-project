@@ -1,0 +1,52 @@
+{
+  "name": "@joyboy/source-registry",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Dynamic source registry and catalog for JoyBoy parsers",
+  "author": "JoyBoy Contributors",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./sources.json": {
+      "default": "./sources.json"
+    }
+  },
+  "files": [
+    "dist",
+    "sources.json",
+    "scripts"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "clean": "rm -rf dist",
+    "update-registry": "node scripts/update-registry.js",
+    "test": "vitest"
+  },
+  "keywords": [
+    "joyboy",
+    "manga",
+    "registry",
+    "catalog",
+    "sources",
+    "parser"
+  ],
+  "dependencies": {
+    "@joyboy/types": "workspace:*"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.0",
+    "vitest": "^1.0.0"
+  },
+  "peerDependencies": {
+    "@joyboy/types": "^1.0.0"
+  }
+}

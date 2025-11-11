@@ -1,11 +1,11 @@
 /**
- * @joyboy/source-mangadex
+ * @joyboy-parser/source-mangadex
  * MangaDex parser implementation
  * Compatible with Node.js, Browser, and React Native
  */
 
-import { BaseSource } from '@joyboy/core';
-import type { Manga, Chapter, Page, SearchOptions } from '@joyboy/types';
+import { BaseSource } from '@joyboy-parser/core';
+import type { Manga, Chapter, Page, SearchOptions } from '@joyboy-parser/types';
 
 // MangaDex API response types
 interface MangaDexManga {

@@ -11,8 +11,8 @@ import type {
 	SearchOptions,
 	RequestOptions,
 	SourceError
-} from '@joyboy/types';
-import { createSourceError, ErrorType } from '@joyboy/types';
+} from '@joyboy-parser/types';
+import { createSourceError, ErrorType } from '@joyboy-parser/types';
 import { RequestManager } from './utils/request';
 
 /**

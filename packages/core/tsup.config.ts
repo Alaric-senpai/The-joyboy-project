@@ -10,5 +10,5 @@ export default defineConfig({
 	splitting: false,
 	target: 'es2022',
 	platform: 'neutral',
-	external: ['@joyboy/types', 'axios']
+	external: ['@joyboy-parser/types', 'axios']
 });

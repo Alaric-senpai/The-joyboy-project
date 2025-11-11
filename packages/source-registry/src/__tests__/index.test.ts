@@ -41,7 +41,7 @@ describe('SourceCatalog', () => {
       const mangadex = catalog.getSource('mangadex');
       expect(mangadex).toBeDefined();
       expect(mangadex?.name).toBe('MangaDex');
-      expect(mangadex?.packageName).toBe('@joyboy/source-mangadex');
+      expect(mangadex?.packageName).toBe('@joyboy-parser/source-mangadex');
     });
   });
 
@@ -124,8 +124,8 @@ describe('SourceCatalog', () => {
     });
 
     it('should search by package name', () => {
-      const results = catalog.searchSources('@joyboy/source-mangadex');
-      expect(results.some(s => s.packageName === '@joyboy/source-mangadex')).toBe(true);
+      const results = catalog.searchSources('@joyboy-parser/source-mangadex');
+      expect(results.some(s => s.packageName === '@joyboy-parser/source-mangadex')).toBe(true);
     });
 
     it('should search by tags', () => {

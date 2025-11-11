@@ -3,7 +3,7 @@
  */
 
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
-import type { RequestOptions } from '@joyboy/types';
+import type { RequestOptions } from '@joyboy-parser/types';
 
 /**
  * Request manager with retry logic and timeout handling

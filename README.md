@@ -53,11 +53,11 @@
 
 | Package | Version | Description |
 |---------|---------|-------------|
-| [@joyboy/types](./packages/types) | 1.0.0 | TypeScript definitions and interfaces |
-| [@joyboy/core](./packages/core) | 1.0.0 | Core SDK, runtime, and base classes |
-| [@joyboy/source-registry](./packages/source-registry) | 1.0.0 | Source catalog with search and filtering |
-| [@joyboy/source-mangadex](./packages/source-mangadex) | 1.0.0 | MangaDex parser implementation |
-| [@joyboy/source-template](./packages/source-template) | 1.0.0 | CLI tool for creating new parsers |
+| [@joyboy-parser/types](./packages/types) | 1.0.0 | TypeScript definitions and interfaces |
+| [@joyboy-parser/core](./packages/core) | 1.0.0 | Core SDK, runtime, and base classes |
+| [@joyboy-parser/source-registry](./packages/source-registry) | 1.0.0 | Source catalog with search and filtering |
+| [@joyboy-parser/source-mangadex](./packages/source-mangadex) | 1.0.0 | MangaDex parser implementation |
+| [@joyboy-parser/source-template](./packages/source-template) | 1.0.0 | CLI tool for creating new parsers |
 
 ---
 
@@ -66,16 +66,16 @@
 ### Installation
 
 ```bash
-npm install @joyboy/core @joyboy/source-mangadex
+npm install @joyboy-parser/core @joyboy-parser/source-mangadex
 ```
 
 ### Basic Usage
 
 ```typescript
-import { JoyBoy } from '@joyboy/core';
+import { JoyBoy } from '@joyboy-parser/core';
 
 // Load a parser
-await JoyBoy.loadSource('@joyboy/source-mangadex');
+await JoyBoy.loadSource('@joyboy-parser/source-mangadex');
 
 // Get the source
 const mangadex = JoyBoy.getSource('mangadex');
@@ -103,8 +103,8 @@ console.log(`${manga.title} has ${chapters.length} chapters`);
 ### Node.js Application
 
 ```typescript
-import { JoyBoy } from '@joyboy/core';
-import { getAllSources } from '@joyboy/source-registry';
+import { JoyBoy } from '@joyboy-parser/core';
+import { getAllSources } from '@joyboy-parser/source-registry';
 
 async function main() {
   // Load all available sources
@@ -129,14 +129,14 @@ main();
 ```typescript
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, Image } from 'react-native';
-import { JoyBoy } from '@joyboy/core';
+import { JoyBoy } from '@joyboy-parser/core';
 
 function MangaList() {
   const [manga, setManga] = useState([]);
 
   useEffect(() => {
     async function load() {
-      await JoyBoy.loadSource('@joyboy/source-mangadex');
+      await JoyBoy.loadSource('@joyboy-parser/source-mangadex');
       const source = JoyBoy.getSource('mangadex');
       const results = await source.search('One Piece');
       setManga(results);
@@ -164,14 +164,14 @@ function MangaList() {
 'use client';
 
 import { useState, useEffect } from 'react';
-import { JoyBoy } from '@joyboy/core';
+import { JoyBoy } from '@joyboy-parser/core';
 
 export default function MangaSearch() {
   const [manga, setManga] = useState([]);
   const [query, setQuery] = useState('');
 
   useEffect(() => {
-    JoyBoy.loadSource('@joyboy/source-mangadex');
+    JoyBoy.loadSource('@joyboy-parser/source-mangadex');
   }, []);
 
   const handleSearch = async () => {
@@ -204,7 +204,7 @@ export default function MangaSearch() {
 ### Using the CLI
 
 ```bash
-npx @joyboy/source-template
+npx @joyboy-parser/source-template
 ```
 
 Follow the prompts to generate a complete parser project.
@@ -212,8 +212,8 @@ Follow the prompts to generate a complete parser project.
 ### Manual Implementation
 
 ```typescript
-import { BaseSource } from '@joyboy/core';
-import type { Manga, Chapter, Page } from '@joyboy/types';
+import { BaseSource } from '@joyboy-parser/core';
+import type { Manga, Chapter, Page } from '@joyboy-parser/types';
 
 export default class MyParser extends BaseSource {
   id = 'myparser';

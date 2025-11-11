@@ -1,9 +1,9 @@
-import { JoyBoy } from '@joyboy/core';
+import { JoyBoy } from '@joyboy-parser/core';
 
 async function main() {
   try {
     // Load the source
-    await JoyBoy.loadSource('@joyboy/source-mangadex');
+    await JoyBoy.loadSource('@joyboy-parser/source-mangadex');
     console.log('✓ Source loaded successfully');
 
     // Get the source

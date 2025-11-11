@@ -20,31 +20,31 @@ This guide explains how to publish the JoyBoy packages to npm.
 
 The following packages are ready for publishing:
 
-1. **@joyboy/types** - Type definitions
-2. **@joyboy/core** - Core SDK and runtime  
-3. **@joyboy/source-template** - CLI tool for creating new sources
+1. **@joyboy-parser/types** - Type definitions
+2. **@joyboy-parser/core** - Core SDK and runtime  
+3. **@joyboy-parser/source-template** - CLI tool for creating new sources
 
-> **Note**: Do NOT publish `@joyboy/source-registry` and `@joyboy/source-mangadex` yet as you mentioned they're still in development.
+> **Note**: Do NOT publish `@joyboy-parser/source-registry` and `@joyboy-parser/source-mangadex` yet as you mentioned they're still in development.
 
 ## Publishing Order
 
 **Important**: Packages must be published in dependency order!
 
-### Step 1: Publish @joyboy/types (no dependencies)
+### Step 1: Publish @joyboy-parser/types (no dependencies)
 
 ```bash
 cd packages/types
 npm publish --access public
 ```
 
-### Step 2: Publish @joyboy/core (depends on @joyboy/types)
+### Step 2: Publish @joyboy-parser/core (depends on @joyboy-parser/types)
 
 ```bash
 cd ../core
 npm publish --access public
 ```
 
-### Step 3: Publish @joyboy/source-template (no dependencies)
+### Step 3: Publish @joyboy-parser/source-template (no dependencies)
 
 ```bash
 cd ../source-template
@@ -57,14 +57,14 @@ After publishing, verify each package:
 
 ```bash
 # Check if packages are public
-npm view @joyboy/types
-npm view @joyboy/core  
-npm view @joyboy/source-template
+npm view @joyboy-parser/types
+npm view @joyboy-parser/core  
+npm view @joyboy-parser/source-template
 
 # Test installation
-npm install @joyboy/types
-npm install @joyboy/core
-npx @joyboy/source-template
+npm install @joyboy-parser/types
+npm install @joyboy-parser/core
+npx @joyboy-parser/source-template
 ```
 
 ## Alternative: Publish All at Once
@@ -97,7 +97,7 @@ npm login
 
 ### Issue: "Package name already exists"
 
-The package name `@joyboy/...` might be taken. You may need to:
+The package name `@joyboy-parser/...` might be taken. You may need to:
 1. Use a different scope (e.g., `@alaric-senpai/...`)
 2. Or claim the `@joyboy` scope if it's available
 
@@ -160,9 +160,9 @@ pnpm release
 
 After publishing, your packages will be available at:
 
-- https://www.npmjs.com/package/@joyboy/types
-- https://www.npmjs.com/package/@joyboy/core
-- https://www.npmjs.com/package/@joyboy/source-template
+- https://www.npmjs.com/package/@joyboy-parser/types
+- https://www.npmjs.com/package/@joyboy-parser/core
+- https://www.npmjs.com/package/@joyboy-parser/source-template
 
 ## Quick Reference
 

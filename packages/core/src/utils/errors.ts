@@ -2,7 +2,7 @@
  * Error utilities
  */
 
-import { ErrorType, type SourceError } from '@joyboy/types';
+import { ErrorType, type SourceError } from '@joyboy-parser/types';
 
 /**
  * Check if an error is a SourceError

@@ -1,5 +1,5 @@
 /**
- * @joyboy/types
+ * @joyboy-parser/types
  * Core type definitions for the JoyBoy parser ecosystem
  * Compatible with Node.js, Browser, and React Native
  */

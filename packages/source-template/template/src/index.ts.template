@@ -5,8 +5,8 @@
  * The {{placeholders}} will be replaced with actual values when creating a new source.
  */
 
-import { BaseSource } from '@joyboy/core';
-import type { Manga, Chapter, Page, SearchOptions } from '@joyboy/types';
+import { BaseSource } from '@joyboy-parser/core';
+import type { Manga, Chapter, Page, SearchOptions } from '@joyboy-parser/types';
 
 export default class {{SOURCE_CLASS_NAME}} extends BaseSource {
 	id = '{{SOURCE_ID}}';

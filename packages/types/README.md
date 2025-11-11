@@ -1,12 +1,12 @@
 
-# @joyboy/types
+# @joyboy-parser/types
 
 TypeScript type definitions for the JoyBoy parser ecosystem.
 
 ## Installation
 
 ```bash
-npm install @joyboy/types
+npm install @joyboy-parser/types
 ```
 
 ## Types
@@ -14,7 +14,7 @@ npm install @joyboy/types
 ### Entity Types
 
 ```typescript
-import type { Manga, Chapter, Page } from '@joyboy/types';
+import type { Manga, Chapter, Page } from '@joyboy-parser/types';
 ```
 
 #### Manga
@@ -69,19 +69,19 @@ interface Page {
 ### Source Types
 
 ```typescript
-import type { Source, SourceInfo, SourceCapabilities } from '@joyboy/types';
+import type { Source, SourceInfo, SourceCapabilities } from '@joyboy-parser/types';
 ```
 
 ### Options
 
 ```typescript
-import type { SearchOptions, RequestOptions } from '@joyboy/types';
+import type { SearchOptions, RequestOptions } from '@joyboy-parser/types';
 ```
 
 ### Errors
 
 ```typescript
-import { ErrorType, type SourceError } from '@joyboy/types';
+import { ErrorType, type SourceError } from '@joyboy-parser/types';
 ```
 
 ## License

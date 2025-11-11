@@ -1,5 +1,5 @@
 {
-  "name": "@joyboy/types",
+  "name": "@joyboy-parser/types",
   "version": "1.0.0",
   "type": "module",
   "description": "TypeScript type definitions for JoyBoy parser ecosystem",

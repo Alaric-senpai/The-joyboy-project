@@ -1,12 +1,12 @@
 
-# @joyboy/core
+# @joyboy-parser/core
 
 Core SDK and runtime for the JoyBoy parser ecosystem.
 
 ## Installation
 
 ```bash
-npm install @joyboy/core @joyboy/types
+npm install @joyboy-parser/core @joyboy-parser/types
 ```
 
 ## Features
@@ -21,10 +21,10 @@ npm install @joyboy/core @joyboy/types
 ## Quick Start
 
 ```typescript
-import { JoyBoy } from '@joyboy/core';
+import { JoyBoy } from '@joyboy-parser/core';
 
 // Load a parser
-await JoyBoy.loadSource('@joyboy/source-mangadex');
+await JoyBoy.loadSource('@joyboy-parser/source-mangadex');
 
 // Get the loaded source
 const mangadex = JoyBoy.getSource('mangadex');
@@ -43,14 +43,14 @@ Load a source parser dynamically.
 
 ```typescript
 // From package name
-await JoyBoy.loadSource('@joyboy/source-mangadex');
+await JoyBoy.loadSource('@joyboy-parser/source-mangadex');
 
 // From instance
-import MangaDexSource from '@joyboy/source-mangadex';
+import MangaDexSource from '@joyboy-parser/source-mangadex';
 await JoyBoy.loadSource(new MangaDexSource());
 
 // From lazy loader
-await JoyBoy.loadSource(() => import('@joyboy/source-mangadex'));
+await JoyBoy.loadSource(() => import('@joyboy-parser/source-mangadex'));
 ```
 
 #### `JoyBoy.getSource(id)`
@@ -83,8 +83,8 @@ const results = await JoyBoy.searchAll('One Piece');
 Abstract base class for creating parsers.
 
 ```typescript
-import { BaseSource } from '@joyboy/core';
-import type { Manga, Chapter, Page } from '@joyboy/types';
+import { BaseSource } from '@joyboy-parser/core';
+import type { Manga, Chapter, Page } from '@joyboy-parser/types';
 
 export default class MySource extends BaseSource {
   id = 'mysource';
@@ -118,7 +118,7 @@ protected async fetchHtml(url: string, options?: RequestOptions): Promise<string
 #### Error Handling
 
 ```typescript
-import { isSourceError, formatError } from '@joyboy/core';
+import { isSourceError, formatError } from '@joyboy-parser/core';
 
 try {
   await source.search('query');

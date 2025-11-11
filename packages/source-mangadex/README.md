@@ -1,12 +1,12 @@
 
-# @joyboy/source-mangadex
+# @joyboy-parser/source-mangadex
 
 MangaDex parser for the JoyBoy ecosystem.
 
 ## Installation
 
 ```bash
-npm install @joyboy/source-mangadex
+npm install @joyboy-parser/source-mangadex
 ```
 
 ## Features
@@ -24,9 +24,9 @@ npm install @joyboy/source-mangadex
 ### With JoyBoy Runtime
 
 ```typescript
-import { JoyBoy } from '@joyboy/core';
+import { JoyBoy } from '@joyboy-parser/core';
 
-await JoyBoy.loadSource('@joyboy/source-mangadex');
+await JoyBoy.loadSource('@joyboy-parser/source-mangadex');
 const mangadex = JoyBoy.getSource('mangadex');
 
 const results = await mangadex.search('One Piece');
@@ -35,7 +35,7 @@ const results = await mangadex.search('One Piece');
 ### Direct Usage
 
 ```typescript
-import MangaDexSource from '@joyboy/source-mangadex';
+import MangaDexSource from '@joyboy-parser/source-mangadex';
 
 const mangadex = new MangaDexSource();
 const results = await mangadex.search('Naruto');

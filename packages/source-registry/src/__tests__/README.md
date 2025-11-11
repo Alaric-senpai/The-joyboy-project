@@ -1,6 +1,6 @@
 # Source Registry Tests
 
-Comprehensive test suite for `@joyboy/source-registry` using Vitest.
+Comprehensive test suite for `@joyboy-parser/source-registry` using Vitest.
 
 ## Test Coverage
 
@@ -114,7 +114,7 @@ pnpm test --watch
 pnpm test --coverage
 
 # Run from workspace root
-pnpm --filter @joyboy/source-registry test
+pnpm --filter @joyboy-parser/source-registry test
 ```
 
 ## Test Structure

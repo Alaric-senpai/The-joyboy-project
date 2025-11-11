@@ -1,15 +1,15 @@
-# @joyboy/source-template
+# @joyboy-parser/source-template
 
 CLI tool and template for creating new JoyBoy source parsers. Quickly scaffold a new parser with all the boilerplate code.
 
 ## Installation
 
 ```bash
-npm install -g @joyboy/source-template
+npm install -g @joyboy-parser/source-template
 # or
-pnpm add -g @joyboy/source-template
+pnpm add -g @joyboy-parser/source-template
 # or
-yarn global add @joyboy/source-template
+yarn global add @joyboy-parser/source-template
 ```
 
 ## Usage
@@ -19,7 +19,7 @@ yarn global add @joyboy/source-template
 Run the CLI tool to create a new source parser:
 
 ```bash
-npx @joyboy/source-template
+npx @joyboy-parser/source-template
 # or if installed globally
 create-joyboy-source
 ```
@@ -41,7 +41,7 @@ You can also use this as a template repository or copy the template files manual
 The CLI creates a new package with:
 
 ```
-@joyboy/source-{name}/
+@joyboy-parser/source-{name}/
 ├── src/
 │   └── index.ts          # Main parser implementation
 ├── package.json
@@ -53,8 +53,8 @@ The CLI creates a new package with:
 ## Example Output
 
 ```typescript
-import { BaseSource } from '@joyboy/core';
-import type { Manga, Chapter, Page, SearchOptions } from '@joyboy/types';
+import { BaseSource } from '@joyboy-parser/core';
+import type { Manga, Chapter, Page, SearchOptions } from '@joyboy-parser/types';
 
 export default class MySource extends BaseSource {
   id = 'my-source';
@@ -100,7 +100,7 @@ After generating your source:
 
 3. Test your parser:
    ```typescript
-   import { JoyBoy } from '@joyboy/core';
+   import { JoyBoy } from '@joyboy-parser/core';
    
    await JoyBoy.loadSource('./dist/index.js');
    const source = JoyBoy.getSource('my-source');
@@ -116,7 +116,7 @@ After generating your source:
 
 For guides on implementing parsers, see:
 - [JoyBoy Documentation](https://github.com/Alaric-senpai/The-joyboy-project)
-- [@joyboy/core API Reference](https://github.com/Alaric-senpai/The-joyboy-project/tree/main/packages/core)
+- [@joyboy-parser/core API Reference](https://github.com/Alaric-senpai/The-joyboy-project/tree/main/packages/core)
 - [Example Sources](https://github.com/Alaric-senpai/The-joyboy-project/tree/main/packages)
 
 ## License

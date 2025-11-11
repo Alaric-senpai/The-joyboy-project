@@ -1,5 +1,5 @@
 /**
- * @joyboy/source-registry
+ * @joyboy-parser/source-registry
  * Dynamic source registry with automatic discovery
  * 
  * Provides a centralized catalog of all available JoyBoy parsers with
@@ -7,14 +7,14 @@
  * 
  * @example
  * ```typescript
- * import { getAllSources, searchSources } from '@joyboy/source-registry';
+ * import { getAllSources, searchSources } from '@joyboy-parser/source-registry';
  * 
  * const allSources = getAllSources();
  * const mangaSources = searchSources('manga');
  * ```
  */
 
-import type { SourceInfo } from '@joyboy/types';
+import type { SourceInfo } from '@joyboy-parser/types';
 import sourcesData from '../sources.json';
 
 /**
@@ -446,7 +446,7 @@ export const sourceCatalog = new SourceCatalog();
  * 
  * @example
  * ```typescript
- * import { getAllSources } from '@joyboy/source-registry';
+ * import { getAllSources } from '@joyboy-parser/source-registry';
  * const sources = getAllSources();
  * ```
  */
@@ -512,4 +512,4 @@ export function getStatistics(): RegistryStats {
 }
 
 // Re-export types
-export type { SourceInfo } from '@joyboy/types';
+export type { SourceInfo } from '@joyboy-parser/types';

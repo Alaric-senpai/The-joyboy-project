@@ -1,5 +1,5 @@
 {
-  "name": "@joyboy/source-template",
+  "name": "@joyboy-parser/source-template",
   "version": "1.0.0",
   "type": "module",
   "description": "CLI tool and template for creating new JoyBoy source parsers",

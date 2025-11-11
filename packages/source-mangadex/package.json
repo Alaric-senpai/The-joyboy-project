@@ -1,5 +1,5 @@
 {
-  "name": "@joyboy/source-mangadex",
+  "name": "@joyboy-parser/source-mangadex",
   "version": "1.0.0",
   "type": "module",
   "description": "MangaDex parser for JoyBoy",
@@ -30,8 +30,8 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@joyboy/core": "workspace:*",
-    "@joyboy/types": "workspace:*"
+    "@joyboy-parser/core": "workspace:*",
+    "@joyboy-parser/types": "workspace:*"
   },
   "devDependencies": {
     "tsup": "^8.0.1",
@@ -39,8 +39,8 @@
     "vitest": "^1.0.0"
   },
   "peerDependencies": {
-    "@joyboy/core": "^1.0.0",
-    "@joyboy/types": "^1.0.0"
+    "@joyboy-parser/core": "^1.0.0",
+    "@joyboy-parser/types": "^1.0.0"
   }
 }
 

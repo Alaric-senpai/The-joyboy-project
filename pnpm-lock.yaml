@@ -29,7 +29,7 @@ importers:
 
   packages/core:
     dependencies:
-      '@joyboy/types':
+      '@joyboy-parser/types':
         specifier: workspace:*
         version: link:../types
       axios:
@@ -48,10 +48,10 @@ importers:
 
   packages/source-mangadex:
     dependencies:
-      '@joyboy/core':
+      '@joyboy-parser/core':
         specifier: workspace:*
         version: link:../core
-      '@joyboy/types':
+      '@joyboy-parser/types':
         specifier: workspace:*
         version: link:../types
     devDependencies:
@@ -67,7 +67,7 @@ importers:
 
   packages/source-registry:
     dependencies:
-      '@joyboy/types':
+      '@joyboy-parser/types':
         specifier: workspace:*
         version: link:../types
     devDependencies:

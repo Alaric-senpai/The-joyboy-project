@@ -53,6 +53,11 @@ export function createSourceError(
 		...context,
 		timestamp: new Date().toISOString()
 	};
+	
+	// Extract status code from context if available
+	if (context?.statusCode) {
+		error.statusCode = context.statusCode;
+	}
   
 	// Preserve stack trace
 	if (originalError?.stack) {

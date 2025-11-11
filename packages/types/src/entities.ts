@@ -81,6 +81,9 @@ export interface Chapter {
 	/** Direct URL to chapter */
 	url?: string;
   
+	/** External URL (e.g., MangaPlus) when chapter is hosted elsewhere */
+	externalUrl?: string;
+  
 	/** Number of pages */
 	pages?: number;
   

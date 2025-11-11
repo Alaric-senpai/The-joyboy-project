@@ -25,11 +25,27 @@
     "joyboy",
     "manga",
     "parser",
-    "types"
+    "types",
+    "typescript",
+    "manhwa",
+    "webtoon"
   ],
+  "author": "Alaric-senpai",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Alaric-senpai/The-joyboy-project.git",
+    "directory": "packages/types"
+  },
+  "homepage": "https://github.com/Alaric-senpai/The-joyboy-project#readme",
+  "bugs": {
+    "url": "https://github.com/Alaric-senpai/The-joyboy-project/issues"
+  },
   "devDependencies": {
     "tsup": "^8.0.1",
     "typescript": "^5.3.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

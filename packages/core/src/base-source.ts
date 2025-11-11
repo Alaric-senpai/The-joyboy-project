@@ -22,7 +22,7 @@ export interface Source extends SourceInfo, SourceCapabilities {
 	/**
 	 * Search for manga by query
 	 */
-	search?(query: string, options?: SearchOptions): Promise<Manga[]>;
+	search(query: string, options?: SearchOptions): Promise<Manga[]>;
   
 	/**
 	 * Get detailed information about a specific manga
@@ -92,10 +92,20 @@ export abstract class BaseSource implements Source {
 		try {
 			return await this.requestManager.request<T>(url, options);
 		} catch (error) {
+			const err = error as any;
+			const context: Record<string, any> = {};
+			
+			// Extract HTTP error details
+			if (err.statusCode) context.statusCode = err.statusCode;
+			if (err.url) context.url = err.url;
+			if (err.method) context.method = err.method;
+			if (err.responseData) context.responseData = err.responseData;
+			
 			throw this.createError(
 				'NETWORK',
 				`Request failed: ${(error as Error).message}`,
-				error as Error
+				error as Error,
+				context
 			);
 		}
 	}
@@ -150,7 +160,13 @@ export abstract class BaseSource implements Source {
 			Object.entries(params).forEach(([key, value]) => {
 				if (value !== undefined && value !== null) {
 					if (Array.isArray(value)) {
-						value.forEach(v => url.searchParams.append(key, String(v)));
+						// Handle arrays (e.g., includes[]=value1&includes[]=value2)
+						value.forEach(v => url.searchParams.append(`${key}[]`, String(v)));
+					} else if (typeof value === 'object' && !Array.isArray(value)) {
+						// Handle nested objects (e.g., order[relevance]=desc)
+						Object.entries(value).forEach(([nestedKey, nestedValue]) => {
+							url.searchParams.append(`${key}[${nestedKey}]`, String(nestedValue));
+						});
 					} else {
 						url.searchParams.append(key, String(value));
 					}

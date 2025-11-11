@@ -10,17 +10,32 @@ import type { Manga, Chapter, Page, SearchOptions } from '@joyboy/types';
 // MangaDex API response types
 interface MangaDexManga {
 	id: string;
+	type: string;
 	attributes: {
 		title: Record<string, string>;
 		altTitles?: Array<Record<string, string>>;
 		description?: Record<string, string>;
+		isLocked: boolean;
+		links?: Record<string, string>;
+		officialLinks?: Record<string, string> | null;
+		originalLanguage: string;
+		lastVolume?: string;
+		lastChapter?: string;
+		publicationDemographic?: string | null;
 		status?: string;
 		year?: number;
-		tags?: Array<{ 
-			id: string;
-			attributes: { name: Record<string, string> } 
-		}>;
 		contentRating?: string;
+		tags?: Array<{
+			id: string;
+			type: string;
+			attributes: {
+				name: Record<string, string>;
+				description?: Record<string, string>;
+				group?: string;
+				version?: number;
+			};
+			relationships: any[];
+		}>;
 	};
 	relationships: Array<{
 		type: string;
@@ -31,18 +46,46 @@ interface MangaDexManga {
 
 interface MangaDexChapter {
 	id: string;
+	type: string;
 	attributes: {
 		title?: string;
 		chapter?: string;
 		volume?: string;
-		publishAt: string;
-		pages: number;
 		translatedLanguage: string;
+		externalUrl?: string;
+		isUnavailable: boolean;
+		publishAt: string;
+		readableAt: string;
+		createdAt: string;
+		updatedAt: string;
+		pages: number;
+		version: number;
 	};
 	relationships: Array<{
 		type: string;
 		id?: string;
-		attributes?: { name?: string };
+		attributes?: {
+			name?: string;
+			altNames?: Array<Record<string, string>>;
+			locked?: boolean;
+			website?: string;
+			ircServer?: string | null;
+			ircChannel?: string | null;
+			discord?: string | null;
+			contactEmail?: string | null;
+			description?: string;
+			twitter?: string | null;
+			mangaUpdates?: string | null;
+			focusedLanguages?: string[];
+			official?: boolean;
+			verified?: boolean;
+			inactive?: boolean;
+			publishDelay?: string | null;
+			exLicensed?: boolean;
+			createdAt?: string;
+			updatedAt?: string;
+			version?: number;
+		};
 	}>;
 }
 
@@ -120,10 +163,8 @@ export default class MangaDexSource extends BaseSource {
 	/**
 	 * Get chapters for a manga
 	 */
-	async getChapters(mangaId: string): Promise<Chapter[]> {
+	async getChapters(mangaId: string, offset:number = 0, limit:number = 100): Promise<Chapter[]> {
 		const allChapters: Chapter[] = [];
-		let offset = 0;
-		const limit = 500;
     
 		// MangaDex has pagination, fetch all chapters
 		while (true) {
@@ -160,10 +201,32 @@ export default class MangaDexSource extends BaseSource {
 	 * Get pages for a chapter
 	 */
 	async getChapterPages(chapterId: string): Promise<Page[]> {
+		// First, get chapter details to check for external URL
+		const chapterResponse = await this.request<{ data: MangaDexChapter }>(
+			this.buildUrl(`/chapter/${chapterId}`, {
+				includes: ['scanlation_group']
+			})
+		);
+		
+		// If chapter has an external URL (e.g., MangaPlus), it's not available through MangaDex
+		if (chapterResponse.data.attributes.externalUrl) {
+			throw this.createError(
+				'NOT_FOUND',
+				`Chapter is hosted externally at: ${chapterResponse.data.attributes.externalUrl}. Please visit the external site to read this chapter.`,
+				undefined,
+				{
+					externalUrl: chapterResponse.data.attributes.externalUrl,
+					isExternal: true
+				}
+			);
+		}
+		
 		const response = await this.request<MangaDexPageResponse>(
 			this.buildUrl(`/at-home/server/${chapterId}`)
 		);
     
+		console.dir(response)
+
 		const { baseUrl, chapter } = response;
     
 		return chapter.data.map((filename, index) => ({
@@ -284,7 +347,8 @@ export default class MangaDexSource extends BaseSource {
 			pages: data.attributes.pages,
 			scanlator,
 			language: data.attributes.translatedLanguage,
-			url: `https://mangadex.org/chapter/${data.id}`
+			url: `https://mangadex.org/chapter/${data.id}`,
+			externalUrl: data.attributes.externalUrl
 		};
 	}
 

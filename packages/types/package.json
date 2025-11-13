@@ -1,6 +1,6 @@
 {
   "name": "@joyboy-parser/types",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "description": "TypeScript type definitions for JoyBoy parser ecosystem",
   "main": "./dist/index.js",
@@ -14,7 +14,8 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md"
   ],
   "scripts": {
     "build": "tsup",

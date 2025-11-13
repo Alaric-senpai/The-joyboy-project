@@ -1,8 +1,8 @@
 {
   "version": "1.0.0",
   "metadata": {
-    "lastUpdated": "2025-11-13T12:00:00Z",
-    "totalSources": 1,
+    "lastUpdated": "2025-11-13T11:23:56.966Z",
+    "totalSources": 3,
     "maintainer": "JoyBoy Community",
     "url": "https://github.com/Alaric-senpai/The-joyboy-project",
     "description": "Official JoyBoy source registry - Cross-platform manga parser sources",
@@ -10,19 +10,92 @@
   },
   "sources": [
     {
+      "id": "mangafire",
+      "name": "A",
+      "version": "1.0.0",
+      "baseUrl": "https://mangafire.to",
+      "description": "A parser for the mangafire website",
+      "icon": "https://mangafire.to/favicon.ico",
+      "author": "JoyBoy Community",
+      "repository": "https://github.com/Alaric-senpai/The-joyboy-project/tree/main/packages/source-mangafire",
+      "downloads": {
+        "stable": "https://cdn.jsdelivr.net/gh/Alaric-senpai/The-joyboy-project@main/packages/source-mangafire/dist/index.js",
+        "latest": "https://cdn.jsdelivr.net/gh/Alaric-senpai/The-joyboy-project@main/packages/source-mangafire/dist/index.js",
+        "versions": {
+          "1.0.0": "https://cdn.jsdelivr.net/gh/Alaric-senpai/The-joyboy-project@main/packages/source-mangafire/dist/index.js"
+        }
+      },
+      "integrity": {
+        "sha256": "59e7bc6409f758a11bc85bad601ec2e3971285b44ad8a61f31018840fb5ab259"
+      },
+      "metadata": {
+        "languages": [
+          "en"
+        ],
+        "nsfw": false,
+        "official": true,
+        "tags": [
+          "manga",
+          "scraper",
+          "english"
+        ],
+        "lastUpdated": "2025-11-13T11:23:56.919Z",
+        "minCoreVersion": "1.0.0",
+        "maxCoreVersion": "2.0.0",
+        "websiteUrl": "https://mangafire.to",
+        "supportUrl": "https://github.com/Alaric-senpai/The-joyboy-project/issues"
+      },
+      "legal": {
+        "disclaimer": "This parser uses web scraping of https://mangafire.to. Please respect their terms of service and rate limits. This is an unofficial parser.",
+        "sourceType": "scraper",
+        "requiresAuth": false
+      },
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "date": "2025-11-13T11:23:56.919Z",
+          "changes": [
+            "Initial release",
+            "Search functionality",
+            "Manga details",
+            "Chapter listing",
+            "Page loading",
+            "Cross-platform compatibility (Web, Node.js, React Native, Expo)"
+          ],
+          "breaking": false
+        }
+      ],
+      "statistics": {
+        "downloads": 0,
+        "stars": 0,
+        "rating": 0,
+        "activeUsers": 0
+      },
+      "capabilities": {
+        "supportsSearch": true,
+        "supportsTrending": true,
+        "supportsLatest": true,
+        "supportsFilters": true,
+        "supportsPopular": true,
+        "supportsAuth": false,
+        "supportsDownload": true,
+        "supportsBookmarks": true
+      }
+    },
+    {
       "id": "mangadex",
       "name": "MangaDex",
       "version": "1.0.0",
       "baseUrl": "https://api.mangadex.org",
-      "description": "Official MangaDex API parser with support for manga search, details, chapters, and page loading. Features multilingual support, advanced filtering, and comprehensive metadata.",
+      "description": "MangaDex parser for JoyBoy",
       "icon": "https://mangadex.org/favicon.ico",
       "author": "JoyBoy Community",
       "repository": "https://github.com/Alaric-senpai/The-joyboy-project/tree/main/packages/source-mangadex",
       "downloads": {
-        "stable": "https://raw.githubusercontent.com/Alaric-senpai/The-joyboy-project/main/packages/source-mangadex/dist/index.js",
-        "latest": "https://raw.githubusercontent.com/Alaric-senpai/The-joyboy-project/main/packages/source-mangadex/dist/index.js",
+        "stable": "https://cdn.jsdelivr.net/gh/Alaric-senpai/The-joyboy-project@main/packages/source-mangadex/dist/index.js",
+        "latest": "https://cdn.jsdelivr.net/gh/Alaric-senpai/The-joyboy-project@main/packages/source-mangadex/dist/index.js",
         "versions": {
-          "1.0.0": "https://raw.githubusercontent.com/Alaric-senpai/The-joyboy-project/main/packages/source-mangadex/dist/index.js"
+          "1.0.0": "https://cdn.jsdelivr.net/gh/Alaric-senpai/The-joyboy-project@main/packages/source-mangadex/dist/index.js"
         }
       },
       "integrity": {
@@ -50,14 +123,14 @@
           "popular",
           "official"
         ],
-        "lastUpdated": "2025-11-13T12:00:00Z",
-        "minCoreVersion": "1.0.0",
+        "lastUpdated": "2025-11-13T11:23:56.917Z",
+        "minCoreVersion": "workspace:*",
         "maxCoreVersion": "2.0.0",
         "websiteUrl": "https://mangadex.org",
         "supportUrl": "https://github.com/Alaric-senpai/The-joyboy-project/issues"
       },
       "legal": {
-        "disclaimer": "This parser uses the official MangaDex API (api.mangadex.org). Please respect MangaDex's terms of service and rate limits. This is an unofficial parser not affiliated with MangaDex.",
+        "disclaimer": "This parser uses the official API of https://mangadex.org. Please respect their terms of service and rate limits. This is an unofficial parser.",
         "sourceType": "api",
         "requiresAuth": false,
         "termsOfServiceUrl": "https://mangadex.org/terms"
@@ -65,15 +138,13 @@
       "changelog": [
         {
           "version": "1.0.0",
-          "date": "2025-11-13T12:00:00Z",
+          "date": "2025-11-13T11:23:56.918Z",
           "changes": [
             "Initial release",
-            "Search functionality with advanced filters",
-            "Manga details with comprehensive metadata",
-            "Chapter listing and pagination",
-            "Page loading with CDN support",
-            "Multi-language support (10+ languages)",
-            "Error handling with detailed context",
+            "Search functionality",
+            "Manga details",
+            "Chapter listing",
+            "Page loading",
             "Cross-platform compatibility (Web, Node.js, React Native, Expo)"
           ],
           "breaking": false
@@ -95,28 +166,113 @@
         "supportsDownload": true,
         "supportsBookmarks": true
       }
+    },
+    {
+      "id": "manhuafast",
+      "name": "Parser for manhuafast",
+      "version": "1.0.0",
+      "baseUrl": "https://manhuafast.com",
+      "description": "Parser for manhuafast",
+      "icon": "https://manhuafast.com/favicon.ico",
+      "author": "JoyBoy Community",
+      "repository": "https://github.com/Alaric-senpai/The-joyboy-project/tree/main/packages/source-manhuafast",
+      "downloads": {
+        "stable": "https://cdn.jsdelivr.net/gh/Alaric-senpai/The-joyboy-project@main/packages/source-manhuafast/dist/index.js",
+        "latest": "https://cdn.jsdelivr.net/gh/Alaric-senpai/The-joyboy-project@main/packages/source-manhuafast/dist/index.js",
+        "versions": {
+          "1.0.0": "https://cdn.jsdelivr.net/gh/Alaric-senpai/The-joyboy-project@main/packages/source-manhuafast/dist/index.js"
+        }
+      },
+      "integrity": {
+        "sha256": "4c0ab413a344f6bd7622418e38488769a6b95dca5539d76fbedaf14c35900463"
+      },
+      "metadata": {
+        "languages": [
+          "en"
+        ],
+        "nsfw": false,
+        "official": true,
+        "tags": [
+          "manhua",
+          "scraper",
+          "english"
+        ],
+        "lastUpdated": "2025-11-13T11:23:56.920Z",
+        "minCoreVersion": "1.0.0",
+        "maxCoreVersion": "2.0.0",
+        "websiteUrl": "https://manhuafast.com",
+        "supportUrl": "https://github.com/Alaric-senpai/The-joyboy-project/issues"
+      },
+      "legal": {
+        "disclaimer": "This parser uses web scraping of https://manhuafast.com. Please respect their terms of service and rate limits. This is an unofficial parser.",
+        "sourceType": "scraper",
+        "requiresAuth": false
+      },
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "date": "2025-11-13T11:23:56.920Z",
+          "changes": [
+            "Initial release",
+            "Search functionality",
+            "Manga details",
+            "Chapter listing",
+            "Page loading",
+            "Cross-platform compatibility (Web, Node.js, React Native, Expo)"
+          ],
+          "breaking": false
+        }
+      ],
+      "statistics": {
+        "downloads": 0,
+        "stars": 0,
+        "rating": 0,
+        "activeUsers": 0
+      },
+      "capabilities": {
+        "supportsSearch": true,
+        "supportsTrending": true,
+        "supportsLatest": true,
+        "supportsFilters": false,
+        "supportsPopular": true,
+        "supportsAuth": false,
+        "supportsDownload": true,
+        "supportsBookmarks": true
+      }
     }
   ],
   "categories": {
     "official": [
-      "mangadex"
+      "mangafire",
+      "mangadex",
+      "manhuafast"
     ],
     "community": [],
     "api": [
       "mangadex"
     ],
-    "scraper": [],
+    "scraper": [
+      "mangafire",
+      "manhuafast"
+    ],
     "multi-language": [
       "mangadex"
     ],
-    "english-only": [],
+    "english-only": [
+      "mangafire",
+      "manhuafast"
+    ],
     "nsfw": [],
     "sfw": [
-      "mangadex"
+      "mangafire",
+      "mangadex",
+      "manhuafast"
     ]
   },
   "featured": [
-    "mangadex"
+    "mangafire",
+    "mangadex",
+    "manhuafast"
   ],
   "deprecated": [],
   "notices": [
@@ -124,14 +280,14 @@
       "type": "info",
       "title": "Welcome to JoyBoy Registry",
       "message": "This is the official source registry for JoyBoy parsers. All sources are cross-platform compatible with Web, Node.js, React Native, and Expo. Sources are dynamically loaded at runtime for maximum flexibility.",
-      "date": "2025-11-13T12:00:00Z",
+      "date": "2025-11-13T11:23:56.966Z",
       "dismissible": true
     },
     {
       "type": "info",
       "title": "MangaDex Source Available",
       "message": "The official MangaDex API parser is now available! Features include advanced search, multi-language support, and comprehensive metadata. This source uses the official MangaDex API and respects all rate limits.",
-      "date": "2025-11-13T12:00:00Z",
+      "date": "2025-11-13T11:23:56.966Z",
       "dismissible": true
     }
   ]

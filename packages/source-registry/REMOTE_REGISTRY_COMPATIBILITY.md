@@ -121,8 +121,8 @@ createRemoteRegistry(url, { timeout: 10000 });
 
 ```typescript
 export const DEFAULT_REGISTRY_URLS = {
-  github: 'https://raw.githubusercontent.com/Alaric-senpai/The-joyboy-project/main/registry/sources.json',
   jsdelivr: 'https://cdn.jsdelivr.net/gh/Alaric-senpai/The-joyboy-project@main/registry/sources.json',
+  github: 'https://raw.githubusercontent.com/Alaric-senpai/The-joyboy-project/main/registry/sources.json',
   custom: 'https://api.joyboy.dev/registry',
 };
 ```

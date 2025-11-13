@@ -44,7 +44,7 @@ const stats = sourceCatalog.getStatistics();
 console.log(`Total sources: ${stats.totalSources}`);
 
 // Create a catalog that syncs with a remote registry
-const remoteCatalog = new SourceCatalog('https://raw.githubusercontent.com/yourorg/yourrepo/main/registry/sources.json');
+const remoteCatalog = new SourceCatalog('https://cdn.jsdelivr.net/gh/Alaric-senpai/The-joyboy-project@main/registry/sources.json');
 await remoteCatalog.syncWithRemote();
 ```
 

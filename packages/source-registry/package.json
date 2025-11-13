@@ -28,7 +28,8 @@
     "dev": "tsup --watch",
     "clean": "rm -rf dist",
     "update-registry": "node scripts/update-registry.js",
-    "test": "vitest"
+    "test": "vitest",
+    "test:remote": "node test-remote-registry.js"
   },
   "keywords": [
     "joyboy",

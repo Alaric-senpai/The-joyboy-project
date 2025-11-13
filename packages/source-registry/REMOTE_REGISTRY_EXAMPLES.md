@@ -87,7 +87,7 @@ import { RemoteRegistry, createRemoteRegistry } from '@joyboy-parser/source-regi
 async function main() {
   // Method 1: Direct instantiation
   const registry = new RemoteRegistry({
-    registryUrl: 'https://raw.githubusercontent.com/Alaric-senpai/The-joyboy-project/main/registry/sources.json',
+    registryUrl: 'https://cdn.jsdelivr.net/gh/Alaric-senpai/The-joyboy-project@main/registry/sources.json',
     timeout: 10000,
   });
 
@@ -113,7 +113,7 @@ import fetch from 'node-fetch';
 import { RemoteRegistry } from '@joyboy-parser/source-registry';
 
 const registry = new RemoteRegistry({
-  registryUrl: 'https://raw.githubusercontent.com/Alaric-senpai/The-joyboy-project/main/registry/sources.json',
+  registryUrl: 'https://cdn.jsdelivr.net/gh/Alaric-senpai/The-joyboy-project@main/registry/sources.json',
   fetchImplementation: fetch as any, // Provide polyfill
 });
 

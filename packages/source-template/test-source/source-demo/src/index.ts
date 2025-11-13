@@ -1,6 +1,6 @@
 // @ts-nocheck
 /**
- * {{SOURCE_NAME}} Parser for JoyBoy
+ * demo Parser for JoyBoy
  * This template provides a starting point for creating a new JoyBoy source parser.
  * All {{placeholders}} are replaced during source generation.
  */
@@ -13,13 +13,13 @@ import type { Manga, Chapter, Page, SearchOptions, PaginationBase } from '@joybo
  * This file includes all abstract methods from BaseSource so newly generated sources
  * compile and provide clear stubs for implementers.
  */
-export default class {{SOURCE_CLASS_NAME}} extends BaseSource {
-	id = '{{SOURCE_ID}}';
-	name = '{{SOURCE_NAME}}';
+export default class demoSource extends BaseSource {
+	id = 'demo';
+	name = 'demo';
 	version = '1.0.0';
-	baseUrl = '{{BASE_URL}}'; // TODO: Replace with actual base url
+	baseUrl = 'https://demo.tss.com'; // TODO: Replace with actual base url
 	icon = ''; // Optional
-	description = '{{SOURCE_NAME}} parser for JoyBoy';
+	description = 'demo parser for JoyBoy';
 
 	// Capabilities
 	supportsSearch = true;

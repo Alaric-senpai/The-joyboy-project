@@ -14,6 +14,7 @@ import type {
 } from '@joyboy-parser/types';
 import { createSourceError, ErrorType } from '@joyboy-parser/types';
 import { RequestManager } from './utils/request';
+import { parseHTML } from 'linkedom';
 
 /**
  * Core interface that all source parsers must implement
@@ -34,6 +35,15 @@ export interface Source extends SourceInfo, SourceCapabilities {
 	 */
 	getChapters(mangaId: string): Promise<Chapter[]>;
   
+
+
+	/**
+	 * get items by page 
+	 * @param searchLabel 
+	 * @param pageNumber 
+	 */
+	getbyPage(searchLabel:string, pageNumber:number):Promise<Manga[]>;
+
 	/**
 	 * Get all pages for a specific chapter
 	 */
@@ -53,6 +63,12 @@ export interface Source extends SourceInfo, SourceCapabilities {
 	 * Get popular manga (optional)
 	 */
 	getPopular?(options?: SearchOptions): Promise<Manga[]>;
+
+	/**Extract pagineation data
+	 * @param url the url to extract pagination
+	 */
+	extractPaginationInfo(url:string):Promise<PaginationBase>;
+
 }
 
 /**
@@ -77,6 +93,8 @@ export abstract class BaseSource implements Source {
 	supportsPopular = false;
 
 	protected requestManager: RequestManager;
+
+	// protected 
 
 	constructor() {
 		this.requestManager = new RequestManager();
@@ -115,6 +133,8 @@ export abstract class BaseSource implements Source {
 	 */
 	protected async fetchHtml(url: string, options?: RequestOptions): Promise<string> {
 		try {
+			// Return raw HTML string. Parsing is provided by `parseHtml` helper so
+			// callers can decide which runtime to use or when to parse.
 			return await this.requestManager.fetchText(url, options);
 		} catch (error) {
 			throw this.createError(
@@ -176,15 +196,39 @@ export abstract class BaseSource implements Source {
     
 		return url.toString();
 	}
+
+
+	/**
+	 * Parse an HTML string into a DOM-like structure using linkedom.
+	 * This is synchronous and returns the same shape as `parseHTML`.
+	 *
+	 * Note: callers may choose to parse themselves; `fetchHtml` returns raw HTML.
+	 */
+	protected parseHtml(html: string) {
+		return parseHTML(html);
+	}
   
 	/**
 	 * Abstract methods that must be implemented
 	 */
+
+
+	/**
+	 * 
+	 * @param searchLabel @default page
+	 * @param pageNumber 
+	 */
+	abstract getbyPage(searchLabel: string, pageNumber: number): Promise<Manga[]>;
+
+
+	abstract listAll(options?: SearchOptions): Promise<Manga[]>;
 
     abstract search(query: string, options?: SearchOptions): Promise<Manga[]>;
 
 	abstract getMangaDetails(id: string): Promise<Manga>;
 	abstract getChapters(mangaId: string): Promise<Chapter[]>;
 	abstract getChapterPages(chapterId: string): Promise<Page[]>;
+
+	abstract extractPaginationInfo(url: string): Promise<PaginationBase>;
 }
 

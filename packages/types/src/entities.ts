@@ -5,7 +5,7 @@
 /**
  * Status of a manga series
  */
-export type MangaStatus = 'ongoing' | 'completed' | 'hiatus' | 'cancelled' | 'unknown';
+export type MangaStatus = 'ongoing' | 'completed' | 'hiatus' | 'cancelled' | 'unknown'| 'on-hold';
 
 /**
  * Content rating categories
@@ -114,3 +114,7 @@ export interface Page {
 	height?: number;
 }
 
+
+export interface PaginationBase {
+	totalPages: number
+}

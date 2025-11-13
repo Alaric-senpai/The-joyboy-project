@@ -59,6 +59,8 @@ export interface SourceCapabilities {
 export interface SearchOptions {
 	/** Search query */
 	query?: string;
+
+	offset?:number;
   
 	/** Page number (1-based) */
 	page?: number;

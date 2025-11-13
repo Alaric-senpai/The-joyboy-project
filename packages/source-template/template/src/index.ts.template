@@ -1,8 +1,8 @@
 // @ts-nocheck
 /**
  * {{SOURCE_NAME}} Parser for JoyBoy
- * This is a template file with placeholders that get replaced by the generator.
- * The {{placeholders}} will be replaced with actual values when creating a new source.
+ * This template provides a starting point for creating a new JoyBoy source parser.
+ * All {{placeholders}} are replaced during source generation.
  */
 
 import { BaseSource } from '@joyboy-parser/core';
@@ -12,11 +12,11 @@ export default class {{SOURCE_CLASS_NAME}} extends BaseSource {
 	id = '{{SOURCE_ID}}';
 	name = '{{SOURCE_NAME}}';
 	version = '1.0.0';
-	baseUrl = '{{BASE_URL}}'; // TODO: Set your base URL
-	icon = ''; // TODO: Set icon URL (optional)
+	baseUrl = '{{BASE_URL}}'; // TODO: Replace with the real base URL of the manga source
+	icon = ''; // Optional: URL to source logo/icon
 	description = '{{SOURCE_NAME}} parser for JoyBoy';
-  
-	// Set supported capabilities
+
+	// Capabilities — set true for supported features
 	supportsSearch = true;
 	supportsTrending = false;
 	supportsLatest = false;
@@ -24,105 +24,48 @@ export default class {{SOURCE_CLASS_NAME}} extends BaseSource {
 	supportsPopular = false;
 
 	/**
-	 * Search for manga
-	 * TODO: Implement search logic
+	 * Search for manga by query.
+	 * Implement logic to fetch and parse search results.
 	 */
 	async search(query: string, options?: SearchOptions): Promise<Manga[]> {
-		// Example implementation:
+		// Example implementation pattern:
 		// const url = this.buildUrl('/search', { q: query });
 		// const html = await this.fetchHtml(url);
 		// return this.parseSearchResults(html);
-    
-		throw this.createError(
-			'PARSE',
-			'Search not implemented yet'
-		);
+		throw this.createError('PARSE', 'Search not implemented yet');
 	}
 
 	/**
-	 * Get detailed manga information
-	 * TODO: Implement manga details fetching
+	 * Get full manga details by ID.
+	 * Should return title, author, cover, description, etc.
 	 */
 	async getMangaDetails(id: string): Promise<Manga> {
-		// Example implementation:
+		// Example:
 		// const url = this.buildUrl(`/manga/${id}`);
 		// const html = await this.fetchHtml(url);
 		// return this.parseMangaDetails(html, id);
-    
-		throw this.createError(
-			'PARSE',
-			'Get manga details not implemented yet'
-		);
+		throw this.createError('PARSE', 'Get manga details not implemented yet');
 	}
 
 	/**
-	 * Get all chapters for a manga
-	 * TODO: Implement chapters fetching
+	 * Get all chapters for a manga by its ID.
 	 */
 	async getChapters(mangaId: string): Promise<Chapter[]> {
-		// Example implementation:
+		// Example:
 		// const url = this.buildUrl(`/manga/${mangaId}/chapters`);
 		// const html = await this.fetchHtml(url);
 		// return this.parseChapters(html);
-    
-		throw this.createError(
-			'PARSE',
-			'Get chapters not implemented yet'
-		);
+		throw this.createError('PARSE', 'Get chapters not implemented yet');
 	}
 
 	/**
-	 * Get all pages for a chapter
-	 * TODO: Implement page fetching
+	 * Get all pages (images) for a specific chapter.
 	 */
 	async getChapterPages(chapterId: string): Promise<Page[]> {
-		// Example implementation:
+		// Example:
 		// const url = this.buildUrl(`/chapter/${chapterId}`);
 		// const html = await this.fetchHtml(url);
 		// return this.parsePages(html);
-    
-		throw this.createError(
-			'PARSE',
-			/**
-			 * ExampleSource Parser for JoyBoy
-			 * This is a safe placeholder implementation that keeps the template
-			 * file valid TypeScript. Replace with real implementation when
-			 * generating a new source package.
-			 */
-
-			import { BaseSource } from '@joyboy/core';
-			import type { Manga, Chapter, Page, SearchOptions } from '@joyboy/types';
-
-			export default class ExampleSource extends BaseSource {
-				id = 'example-source';
-				name = 'ExampleSource';
-				version = '1.0.0';
-				baseUrl = 'https://example.test';
-				icon = '';
-				description = 'ExampleSource parser for JoyBoy';
-
-				// Supported capabilities
-				supportsSearch = true;
-				supportsTrending = false;
-				supportsLatest = false;
-				supportsFilters = false;
-				supportsPopular = false;
-
-				async search(query: string, options?: SearchOptions): Promise<Manga[]> {
-					// Placeholder: real sources should implement actual parsing logic.
-					throw this.createError('PARSE', 'Search not implemented yet');
-				}
-
-				async getMangaDetails(id: string): Promise<Manga> {
-					throw this.createError('PARSE', 'Get manga details not implemented yet');
-				}
-
-				async getChapters(mangaId: string): Promise<Chapter[]> {
-					throw this.createError('PARSE', 'Get chapters not implemented yet');
-				}
-
-				async getChapterPages(chapterId: string): Promise<Page[]> {
-					throw this.createError('PARSE', 'Get chapter pages not implemented yet');
-				}
-			}
-
+		throw this.createError('PARSE', 'Get chapter pages not implemented yet');
+	}
+}

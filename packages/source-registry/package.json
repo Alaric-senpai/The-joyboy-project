@@ -38,6 +38,15 @@
     "sources",
     "parser"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Alaric-senpai/The-joyboy-project.git",
+    "directory": "packages/source-registry"
+  },
+  "homepage": "https://github.com/Alaric-senpai/The-joyboy-project/main/packages/source-registry#readme",
+  "bugs": {
+    "url": "https://github.com/Alaric-senpai/The-joyboy-project/issues"
+  },
   "dependencies": {
     "@joyboy/types": "workspace:*"
   },

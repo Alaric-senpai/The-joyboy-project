@@ -1,5 +1,5 @@
 {
-  "name": "@joyboy/core",
+  "name": "@joyboy-parser/core",
   "version": "1.0.0",
   "type": "module",
   "description": "Core SDK and runtime for the JoyBoy parser ecosystem",
@@ -27,11 +27,27 @@
     "manga",
     "parser",
     "core",
-    "sdk"
+    "sdk",
+    "manhwa",
+    "webtoon",
+    "scraper"
   ],
+  "author": "alaric-senpai",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Alaric-senpai/The-joyboy-project.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/Alaric-senpai/The-joyboy-project#readme",
+  "bugs": {
+    "url": "https://github.com/Alaric-senpai/The-joyboy-project/issues"
+  },
   "dependencies": {
-    "@joyboy/types": "workspace:*"
+    "@joyboy-parser/types": "workspace:*",
+    "@joyboy-parser/source-registry": "workspace:*",
+    "axios": "^1.13.2",
+    "linkedom": "^0.18.12"
   },
   "devDependencies": {
     "tsup": "^8.0.1",
@@ -39,6 +55,10 @@
     "vitest": "^1.0.0"
   },
   "peerDependencies": {
-    "@joyboy/types": "^1.0.0"
+    "@joyboy-parser/types": "^1.0.0",
+    "@joyboy-parser/source-registry": "1.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

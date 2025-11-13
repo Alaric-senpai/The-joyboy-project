@@ -5,7 +5,7 @@
     "lib": ["ES2022", "DOM"],
     "baseUrl": ".",
     "paths": {
-      "@joyboy/*": ["packages/*/src"]
+      "@joyboy-parser/*": ["packages/*/src"]
     },
     "moduleResolution": "bundler",
     "strict": true,

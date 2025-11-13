@@ -10,10 +10,12 @@ import type {
 	SourceCapabilities,
 	SearchOptions,
 	RequestOptions,
-	SourceError
-} from '@joyboy/types';
-import { createSourceError, ErrorType } from '@joyboy/types';
+	SourceError,
+	PaginationBase
+} from '@joyboy-parser/types';
+import { createSourceError, ErrorType } from '@joyboy-parser/types';
 import { RequestManager } from './utils/request';
+import { parseHTML } from 'linkedom';
 
 /**
  * Core interface that all source parsers must implement
@@ -22,7 +24,12 @@ export interface Source extends SourceInfo, SourceCapabilities {
 	/**
 	 * Search for manga by query
 	 */
-	search?(query: string, options?: SearchOptions): Promise<Manga[]>;
+	search(query: string, options?: SearchOptions): Promise<Manga[]>;
+
+	/**
+	 * List all mangas
+	 */
+	listAll(options?:SearchOptions):Promise<Manga[]>;
   
 	/**
 	 * Get detailed information about a specific manga
@@ -34,6 +41,15 @@ export interface Source extends SourceInfo, SourceCapabilities {
 	 */
 	getChapters(mangaId: string): Promise<Chapter[]>;
   
+
+
+	/**
+	 * get items by page 
+	 * @param searchLabel 
+	 * @param pageNumber 
+	 */
+	getbyPage(searchLabel:string, pageNumber:number):Promise<Manga[]>;
+
 	/**
 	 * Get all pages for a specific chapter
 	 */
@@ -53,6 +69,12 @@ export interface Source extends SourceInfo, SourceCapabilities {
 	 * Get popular manga (optional)
 	 */
 	getPopular?(options?: SearchOptions): Promise<Manga[]>;
+
+	/**Extract pagineation data
+	 * @param url the url to extract pagination
+	 */
+	extractPaginationInfo(url:string):Promise<PaginationBase>;
+
 }
 
 /**
@@ -78,6 +100,8 @@ export abstract class BaseSource implements Source {
 
 	protected requestManager: RequestManager;
 
+	// protected 
+
 	constructor() {
 		this.requestManager = new RequestManager();
 	}
@@ -92,10 +116,20 @@ export abstract class BaseSource implements Source {
 		try {
 			return await this.requestManager.request<T>(url, options);
 		} catch (error) {
+			const err = error as any;
+			const context: Record<string, any> = {};
+			
+			// Extract HTTP error details
+			if (err.statusCode) context.statusCode = err.statusCode;
+			if (err.url) context.url = err.url;
+			if (err.method) context.method = err.method;
+			if (err.responseData) context.responseData = err.responseData;
+			
 			throw this.createError(
 				'NETWORK',
 				`Request failed: ${(error as Error).message}`,
-				error as Error
+				error as Error,
+				context
 			);
 		}
 	}
@@ -105,6 +139,8 @@ export abstract class BaseSource implements Source {
 	 */
 	protected async fetchHtml(url: string, options?: RequestOptions): Promise<string> {
 		try {
+			// Return raw HTML string. Parsing is provided by `parseHtml` helper so
+			// callers can decide which runtime to use or when to parse.
 			return await this.requestManager.fetchText(url, options);
 		} catch (error) {
 			throw this.createError(
@@ -150,7 +186,13 @@ export abstract class BaseSource implements Source {
 			Object.entries(params).forEach(([key, value]) => {
 				if (value !== undefined && value !== null) {
 					if (Array.isArray(value)) {
-						value.forEach(v => url.searchParams.append(key, String(v)));
+						// Handle arrays (e.g., includes[]=value1&includes[]=value2)
+						value.forEach(v => url.searchParams.append(`${key}[]`, String(v)));
+					} else if (typeof value === 'object' && !Array.isArray(value)) {
+						// Handle nested objects (e.g., order[relevance]=desc)
+						Object.entries(value).forEach(([nestedKey, nestedValue]) => {
+							url.searchParams.append(`${key}[${nestedKey}]`, String(nestedValue));
+						});
 					} else {
 						url.searchParams.append(key, String(value));
 					}
@@ -160,15 +202,39 @@ export abstract class BaseSource implements Source {
     
 		return url.toString();
 	}
+
+
+	/**
+	 * Parse an HTML string into a DOM-like structure using linkedom.
+	 * This is synchronous and returns the same shape as `parseHTML`.
+	 *
+	 * Note: callers may choose to parse themselves; `fetchHtml` returns raw HTML.
+	 */
+	protected parseHtml(html: string) {
+		return parseHTML(html);
+	}
   
 	/**
 	 * Abstract methods that must be implemented
 	 */
+
+
+	/**
+	 * 
+	 * @param searchLabel @default page
+	 * @param pageNumber 
+	 */
+	abstract getbyPage(searchLabel: string, pageNumber: number): Promise<Manga[]>;
+
+
+	abstract listAll(options?: SearchOptions): Promise<Manga[]>;
 
     abstract search(query: string, options?: SearchOptions): Promise<Manga[]>;
 
 	abstract getMangaDetails(id: string): Promise<Manga>;
 	abstract getChapters(mangaId: string): Promise<Chapter[]>;
 	abstract getChapterPages(chapterId: string): Promise<Page[]>;
+
+	abstract extractPaginationInfo(url: string): Promise<PaginationBase>;
 }
 

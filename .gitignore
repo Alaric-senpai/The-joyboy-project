@@ -2,3 +2,5 @@ node_modules
 .turbo
 paste*
 dist
+# PUBLISHING.md
+PUBLISHING.md

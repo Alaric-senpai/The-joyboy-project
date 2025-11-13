@@ -143,7 +143,7 @@ packages/source-template/
                      │
                      ▼
          ┌───────────────────────┐
-         │   @joyboy/core        │
+         │   @joyboy-parser/core        │
          │   - JoyBoy Runtime    │
          │   - Source Registry   │
          │   - Remote Loader     │
@@ -213,7 +213,7 @@ External Source Data
 ```
 Scenario 1: Static Import (Development)
 ─────────────────────────────────────
-import MangaDexSource from '@joyboy/source-mangadex'
+import MangaDexSource from '@joyboy-parser/source-mangadex'
          ↓
 await JoyBoy.loadSource(new MangaDexSource())
          ↓
@@ -223,7 +223,7 @@ await JoyBoy.loadSource(new MangaDexSource())
 
 Scenario 2: Dynamic NPM Import (Production)
 ─────────────────────────────────────────────
-await JoyBoy.loadSource('@joyboy/source-mangadex')
+await JoyBoy.loadSource('@joyboy-parser/source-mangadex')
          ↓
    Dynamic import() at runtime
          ↓
@@ -294,7 +294,7 @@ pnpm build
 
 ```bash
 # Method 1: Using template CLI
-npx @joyboy/source-template
+npx @joyboy-parser/source-template
 
 # Method 2: Manual
 cd packages
@@ -411,8 +411,8 @@ pnpm test --watch
 
 ```typescript
 // packages/source-myparser/src/index.ts
-import { BaseSource } from '@joyboy/core';
-import type { Manga, Chapter, Page } from '@joyboy/types';
+import { BaseSource } from '@joyboy-parser/core';
+import type { Manga, Chapter, Page } from '@joyboy-parser/types';
 
 export default class MyParserSource extends BaseSource {
   id = 'myparser';
@@ -480,8 +480,8 @@ export default class MyParserSource extends BaseSource {
 
 ```typescript
 // example.ts
-import { JoyBoy } from '@joyboy/core';
-import MyParserSource from '@joyboy/source-myparser';
+import { JoyBoy } from '@joyboy-parser/core';
+import MyParserSource from '@joyboy-parser/source-myparser';
 
 async function main() {
   // Load source
@@ -510,7 +510,7 @@ main();
 // MangaReader.tsx
 import React, { useState, useEffect } from 'react';
 import { View, Text, Image, ScrollView } from 'react-native';
-import { JoyBoy } from '@joyboy/core';
+import { JoyBoy } from '@joyboy-parser/core';
 
 export function MangaReader({ chapterId }: { chapterId: string }) {
   const [pages, setPages] = useState([]);
@@ -551,7 +551,7 @@ export function MangaReader({ chapterId }: { chapterId: string }) {
 ### Error Handling Pattern
 
 ```typescript
-import { isSourceError, ErrorType } from '@joyboy/core';
+import { isSourceError, ErrorType } from '@joyboy-parser/core';
 
 async function safeSearch(query: string) {
   try {
@@ -583,7 +583,7 @@ async function safeSearch(query: string) {
 ### Caching Implementation
 
 ```typescript
-import { CacheManager } from '@joyboy/core';
+import { CacheManager } from '@joyboy-parser/core';
 
 const cache = new CacheManager();
 
@@ -615,7 +615,7 @@ async function getCachedManga(id: string) {
 // packages/core/__tests__/base-source.test.ts
 import { describe, it, expect } from 'vitest';
 import { BaseSource } from '../src/base-source';
-import type { Manga, Chapter, Page } from '@joyboy/types';
+import type { Manga, Chapter, Page } from '@joyboy-parser/types';
 
 class TestSource extends BaseSource {
   id = 'test';
@@ -732,7 +732,7 @@ git push --follow-tags
 
 ```json
 {
-  "name": "@joyboy/core",
+  "name": "@joyboy-parser/core",
   "version": "1.0.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -758,10 +758,10 @@ git push --follow-tags
 # Packages automatically available on:
 
 # jsDelivr
-https://cdn.jsdelivr.net/npm/@joyboy/core@1.0.0/dist/index.js
+https://cdn.jsdelivr.net/npm/@joyboy-parser/core@1.0.0/dist/index.js
 
 # unpkg
-https://unpkg.com/@joyboy/core@1.0.0/dist/index.js
+https://unpkg.com/@joyboy-parser/core@1.0.0/dist/index.js
 ```
 
 ### GitHub Release
@@ -896,7 +896,7 @@ if (process.env.JOYBOY_DEBUG) {
 ### Key Concepts to Remember
 
 1. **Every source extends BaseSource**
-2. **All data types are in @joyboy/types**
+2. **All data types are in @joyboy-parser/types**
 3. **JoyBoy runtime manages all sources**
 4. **Registry provides source discovery**
 5. **Remote loading enables dynamic updates**
@@ -930,7 +930,7 @@ cd packages/core && pnpm build
 cd packages/core && pnpm test
 
 # Creating sources
-npx @joyboy/source-template  # Generate new parser
+npx @joyboy-parser/source-template  # Generate new parser
 pnpm update-registry         # Update sources.json
 
 # Publishing

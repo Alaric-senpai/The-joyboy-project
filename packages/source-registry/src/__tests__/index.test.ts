@@ -13,68 +13,12 @@ import {
   getOfficialSources,
   getSFWSources,
   getStatistics,
-  type RegistrySource,
+  type RegistryEntry,
   type RegistryStats
 } from '../index';
 
 describe('SourceCatalog', () => {
   let catalog: SourceCatalog;
-
-  // Helper to create a minimal valid RegistrySource
-  const createTestSource = (overrides: Partial<RegistrySource> = {}): RegistrySource => ({
-    id: 'test-source',
-    name: 'Test Source',
-    version: '1.0.0',
-    baseUrl: 'https://test.com',
-    description: 'Test description',
-    icon: 'https://test.com/icon.png',
-    author: 'Test Author',
-    repository: 'https://github.com/test/test',
-    downloads: {
-      stable: 'https://test.com/stable.js',
-      latest: 'https://test.com/latest.js',
-      versions: { '1.0.0': 'https://test.com/v1.0.0.js' }
-    },
-    integrity: { sha256: 'abc123' },
-    metadata: {
-      languages: ['en'],
-      nsfw: false,
-      official: false,
-      tags: ['test'],
-      lastUpdated: new Date().toISOString(),
-      minCoreVersion: '1.0.0',
-      websiteUrl: 'https://test.com',
-      supportUrl: 'https://github.com/test/test/issues'
-    },
-    legal: {
-      disclaimer: 'Test disclaimer',
-      sourceType: 'api',
-      requiresAuth: false
-    },
-    changelog: [{
-      version: '1.0.0',
-      date: new Date().toISOString(),
-      changes: ['Initial release'],
-      breaking: false
-    }],
-    statistics: {
-      downloads: 0,
-      stars: 0,
-      rating: 0,
-      activeUsers: 0
-    },
-    capabilities: {
-      supportsSearch: true,
-      supportsTrending: false,
-      supportsLatest: true,
-      supportsFilters: true,
-      supportsPopular: true,
-      supportsAuth: false,
-      supportsDownload: true,
-      supportsBookmarks: true
-    },
-    ...overrides
-  });
 
   beforeEach(() => {
     // Create a fresh catalog instance for each test
@@ -97,7 +41,7 @@ describe('SourceCatalog', () => {
       const mangadex = catalog.getSource('mangadex');
       expect(mangadex).toBeDefined();
       expect(mangadex?.name).toBe('MangaDex');
-      expect(mangadex?.repository).toContain('source-mangadex');
+      expect(mangadex?.packageName).toBe('@joyboy-parser/source-mangadex');
     });
   });
 
@@ -114,7 +58,7 @@ describe('SourceCatalog', () => {
         expect(source).toHaveProperty('name');
         expect(source).toHaveProperty('version');
         expect(source).toHaveProperty('baseUrl');
-        expect(source).toHaveProperty('downloads');
+        expect(source).toHaveProperty('packageName');
       });
     });
   });
@@ -141,7 +85,7 @@ describe('SourceCatalog', () => {
         expect(mangadex.id).toBe('mangadex');
         expect(typeof mangadex.name).toBe('string');
         expect(typeof mangadex.version).toBe('string');
-        expect(typeof mangadex.repository).toBe('string');
+        expect(typeof mangadex.packageName).toBe('string');
       }
     });
   });
@@ -180,15 +124,15 @@ describe('SourceCatalog', () => {
     });
 
     it('should search by package name', () => {
-      const results = catalog.searchSources('source-mangadex');
-      expect(results.some(s => s.repository.includes('source-mangadex'))).toBe(true);
+      const results = catalog.searchSources('@joyboy-parser/source-mangadex');
+      expect(results.some(s => s.packageName === '@joyboy-parser/source-mangadex')).toBe(true);
     });
 
     it('should search by tags', () => {
       const sources = catalog.getAllSources();
-      const sourceWithTags = sources.find(s => s.metadata.tags && s.metadata.tags.length > 0);
-      if (sourceWithTags && sourceWithTags.metadata.tags) {
-        const results = catalog.searchSources(sourceWithTags.metadata.tags[0]);
+      const sourceWithTags = sources.find(s => s.tags && s.tags.length > 0);
+      if (sourceWithTags && sourceWithTags.tags) {
+        const results = catalog.searchSources(sourceWithTags.tags[0]);
         expect(results.length).toBeGreaterThan(0);
       }
     });
@@ -202,10 +146,10 @@ describe('SourceCatalog', () => {
   describe('getSourcesByLanguage', () => {
     it('should filter sources by language', () => {
       const sources = catalog.getAllSources();
-      const sourceWithLang = sources.find(s => s.metadata.languages && s.metadata.languages.length > 0);
-      if (sourceWithLang && sourceWithLang.metadata.languages) {
-        const results = catalog.getSourcesByLanguage(sourceWithLang.metadata.languages[0]);
-        expect(results.every(s => s.metadata.languages?.includes(sourceWithLang.metadata.languages![0]))).toBe(true);
+      const sourceWithLang = sources.find(s => s.languages && s.languages.length > 0);
+      if (sourceWithLang && sourceWithLang.languages) {
+        const results = catalog.getSourcesByLanguage(sourceWithLang.languages[0]);
+        expect(results.every(s => s.languages?.includes(sourceWithLang.languages![0]))).toBe(true);
       }
     });
 
@@ -225,7 +169,7 @@ describe('SourceCatalog', () => {
     it('should filter by multiple languages (OR logic)', () => {
       const results = catalog.getSourcesByLanguages(['en', 'ja']);
       expect(results.every(s => 
-        s.metadata.languages?.some((lang: string) => ['en', 'ja'].includes(lang.toLowerCase()))
+        s.languages?.some(lang => ['en', 'ja'].includes(lang.toLowerCase()))
       )).toBe(true);
     });
 
@@ -244,7 +188,7 @@ describe('SourceCatalog', () => {
   describe('getOfficialSources', () => {
     it('should return only official sources', () => {
       const results = catalog.getOfficialSources();
-      expect(results.every(s => s.metadata.official === true)).toBe(true);
+      expect(results.every(s => s.official === true)).toBe(true);
     });
 
     it('should return array even if no official sources', () => {
@@ -256,28 +200,28 @@ describe('SourceCatalog', () => {
   describe('getCommunitySources', () => {
     it('should return only non-official sources', () => {
       const results = catalog.getCommunitySources();
-      expect(results.every(s => !s.metadata.official)).toBe(true);
+      expect(results.every(s => !s.official)).toBe(true);
     });
   });
 
   describe('getSourcesByTag', () => {
     it('should filter by single tag', () => {
       const sources = catalog.getAllSources();
-      const sourceWithTags = sources.find(s => s.metadata.tags && s.metadata.tags.length > 0);
-      if (sourceWithTags && sourceWithTags.metadata.tags) {
-        const results = catalog.getSourcesByTag(sourceWithTags.metadata.tags[0]);
+      const sourceWithTags = sources.find(s => s.tags && s.tags.length > 0);
+      if (sourceWithTags && sourceWithTags.tags) {
+        const results = catalog.getSourcesByTag(sourceWithTags.tags[0]);
         expect(results.every(s => 
-          s.metadata.tags?.some(t => t.toLowerCase() === sourceWithTags.metadata.tags![0].toLowerCase())
+          s.tags?.some(t => t.toLowerCase() === sourceWithTags.tags![0].toLowerCase())
         )).toBe(true);
       }
     });
 
     it('should be case-insensitive', () => {
       const sources = catalog.getAllSources();
-      const sourceWithTags = sources.find(s => s.metadata.tags && s.metadata.tags.length > 0);
-      if (sourceWithTags && sourceWithTags.metadata.tags) {
-        const lowerResults = catalog.getSourcesByTag(sourceWithTags.metadata.tags[0].toLowerCase());
-        const upperResults = catalog.getSourcesByTag(sourceWithTags.metadata.tags[0].toUpperCase());
+      const sourceWithTags = sources.find(s => s.tags && s.tags.length > 0);
+      if (sourceWithTags && sourceWithTags.tags) {
+        const lowerResults = catalog.getSourcesByTag(sourceWithTags.tags[0].toLowerCase());
+        const upperResults = catalog.getSourcesByTag(sourceWithTags.tags[0].toUpperCase());
         expect(lowerResults.length).toBe(upperResults.length);
       }
     });
@@ -286,12 +230,12 @@ describe('SourceCatalog', () => {
   describe('getSourcesByTags', () => {
     it('should filter by multiple tags (AND logic)', () => {
       const sources = catalog.getAllSources();
-      const sourceWithMultipleTags = sources.find(s => s.metadata.tags && s.metadata.tags.length >= 2);
-      if (sourceWithMultipleTags && sourceWithMultipleTags.metadata.tags) {
-        const tagsToSearch = sourceWithMultipleTags.metadata.tags.slice(0, 2);
+      const sourceWithMultipleTags = sources.find(s => s.tags && s.tags.length >= 2);
+      if (sourceWithMultipleTags && sourceWithMultipleTags.tags) {
+        const tagsToSearch = sourceWithMultipleTags.tags.slice(0, 2);
         const results = catalog.getSourcesByTags(tagsToSearch);
         expect(results.every(s => 
-          tagsToSearch.every(tag => s.metadata.tags?.some(t => t.toLowerCase() === tag.toLowerCase()))
+          tagsToSearch.every(tag => s.tags?.some(t => t.toLowerCase() === tag.toLowerCase()))
         )).toBe(true);
       }
     });
@@ -306,14 +250,14 @@ describe('SourceCatalog', () => {
   describe('getNSFWSources', () => {
     it('should return only NSFW sources', () => {
       const results = catalog.getNSFWSources();
-      expect(results.every(s => s.metadata.nsfw === true)).toBe(true);
+      expect(results.every(s => s.isNsfw === true)).toBe(true);
     });
   });
 
   describe('getSFWSources', () => {
     it('should return only SFW sources', () => {
       const results = catalog.getSFWSources();
-      expect(results.every(s => !s.metadata.nsfw)).toBe(true);
+      expect(results.every(s => !s.isNsfw)).toBe(true);
     });
 
     it('should exclude NSFW sources', () => {
@@ -328,13 +272,13 @@ describe('SourceCatalog', () => {
     it('should return sources sorted by rating (highest first)', () => {
       const results = catalog.getSourcesByRating();
       for (let i = 1; i < results.length; i++) {
-        expect(results[i - 1].statistics.rating! >= results[i].statistics.rating!).toBe(true);
+        expect(results[i - 1].rating! >= results[i].rating!).toBe(true);
       }
     });
 
     it('should only include sources with ratings', () => {
       const results = catalog.getSourcesByRating();
-      expect(results.every(s => s.statistics.rating !== undefined)).toBe(true);
+      expect(results.every(s => s.rating !== undefined)).toBe(true);
     });
   });
 
@@ -342,13 +286,13 @@ describe('SourceCatalog', () => {
     it('should return sources sorted by downloads (highest first)', () => {
       const results = catalog.getSourcesByPopularity();
       for (let i = 1; i < results.length; i++) {
-        expect(results[i - 1].statistics.downloads! >= results[i].statistics.downloads!).toBe(true);
+        expect(results[i - 1].downloads! >= results[i].downloads!).toBe(true);
       }
     });
 
     it('should only include sources with download counts', () => {
       const results = catalog.getSourcesByPopularity();
-      expect(results.every(s => s.statistics.downloads !== undefined)).toBe(true);
+      expect(results.every(s => s.downloads !== undefined)).toBe(true);
     });
   });
 
@@ -359,8 +303,8 @@ describe('SourceCatalog', () => {
       cutoff.setDate(cutoff.getDate() - 30);
       
       results.forEach(source => {
-        if (source.metadata.lastUpdated) {
-          const updateDate = new Date(source.metadata.lastUpdated);
+        if (source.lastUpdated) {
+          const updateDate = new Date(source.lastUpdated);
           expect(updateDate >= cutoff).toBe(true);
         }
       });
@@ -369,8 +313,8 @@ describe('SourceCatalog', () => {
     it('should sort by most recent first', () => {
       const results = catalog.getRecentlyUpdated(365);
       for (let i = 1; i < results.length; i++) {
-        const dateA = new Date(results[i - 1].metadata.lastUpdated!);
-        const dateB = new Date(results[i].metadata.lastUpdated!);
+        const dateA = new Date(results[i - 1].lastUpdated!);
+        const dateB = new Date(results[i].lastUpdated!);
         expect(dateA >= dateB).toBe(true);
       }
     });
@@ -383,40 +327,47 @@ describe('SourceCatalog', () => {
 
     it('should only include sources with lastUpdated field', () => {
       const results = catalog.getRecentlyUpdated(30);
-      expect(results.every(s => s.metadata.lastUpdated !== undefined)).toBe(true);
+      expect(results.every(s => s.lastUpdated !== undefined)).toBe(true);
     });
   });
 
   describe('registerSource', () => {
     it('should add a new source to the catalog', () => {
-      const newSource = createTestSource({
-        id: 'test-source-new',
-        name: 'Test Source'
-      });
+      const newSource: RegistryEntry = {
+        id: 'test-source',
+        name: 'Test Source',
+        version: '1.0.0',
+        baseUrl: 'https://test.com',
+        packageName: '@test/source-test'
+      };
 
       catalog.registerSource(newSource);
-      const found = catalog.getSource('test-source-new');
+      const found = catalog.getSource('test-source');
       expect(found).toBeDefined();
       expect(found?.name).toBe('Test Source');
     });
 
     it('should overwrite existing source with same ID', () => {
-      const source1 = createTestSource({
-        id: 'test-source-replace',
+      const source1: RegistryEntry = {
+        id: 'test-source',
         name: 'Test Source v1',
-        version: '1.0.0'
-      });
+        version: '1.0.0',
+        baseUrl: 'https://test.com',
+        packageName: '@test/source-test'
+      };
 
-      const source2 = createTestSource({
-        id: 'test-source-replace',
+      const source2: RegistryEntry = {
+        id: 'test-source',
         name: 'Test Source v2',
-        version: '2.0.0'
-      });
+        version: '2.0.0',
+        baseUrl: 'https://test.com',
+        packageName: '@test/source-test'
+      };
 
       catalog.registerSource(source1);
       catalog.registerSource(source2);
       
-      const found = catalog.getSource('test-source-replace');
+      const found = catalog.getSource('test-source');
       expect(found?.name).toBe('Test Source v2');
       expect(found?.version).toBe('2.0.0');
     });
@@ -424,10 +375,13 @@ describe('SourceCatalog', () => {
 
   describe('unregisterSource', () => {
     it('should remove a source from the catalog', () => {
-      const newSource = createTestSource({
+      const newSource: RegistryEntry = {
         id: 'temp-source',
-        name: 'Temporary Source'
-      });
+        name: 'Temporary Source',
+        version: '1.0.0',
+        baseUrl: 'https://temp.com',
+        packageName: '@temp/source-temp'
+      };
 
       catalog.registerSource(newSource);
       expect(catalog.getSource('temp-source')).toBeDefined();
@@ -453,19 +407,25 @@ describe('SourceCatalog', () => {
     it('should update after registering a source', () => {
       const initialCount = catalog.getSourceCount();
       
-      catalog.registerSource(createTestSource({
+      catalog.registerSource({
         id: 'new-source',
-        name: 'New Source'
-      }));
+        name: 'New Source',
+        version: '1.0.0',
+        baseUrl: 'https://new.com',
+        packageName: '@new/source-new'
+      });
 
       expect(catalog.getSourceCount()).toBe(initialCount + 1);
     });
 
     it('should update after unregistering a source', () => {
-      catalog.registerSource(createTestSource({
+      catalog.registerSource({
         id: 'temp-source',
-        name: 'Temp Source'
-      }));
+        name: 'Temp Source',
+        version: '1.0.0',
+        baseUrl: 'https://temp.com',
+        packageName: '@temp/source-temp'
+      });
 
       const beforeCount = catalog.getSourceCount();
       catalog.unregisterSource('temp-source');
@@ -538,15 +498,21 @@ describe('SourceCatalog', () => {
 
   describe('importFromJSON', () => {
     it('should import sources from JSON string', () => {
-      const sources: RegistrySource[] = [
-        createTestSource({
+      const sources: RegistryEntry[] = [
+        {
           id: 'imported-1',
-          name: 'Imported Source 1'
-        }),
-        createTestSource({
+          name: 'Imported Source 1',
+          version: '1.0.0',
+          baseUrl: 'https://import1.com',
+          packageName: '@import/source-1'
+        },
+        {
           id: 'imported-2',
-          name: 'Imported Source 2'
-        })
+          name: 'Imported Source 2',
+          version: '1.0.0',
+          baseUrl: 'https://import2.com',
+          packageName: '@import/source-2'
+        }
       ];
 
       const json = JSON.stringify(sources);
@@ -567,10 +533,13 @@ describe('SourceCatalog', () => {
 
   describe('clear', () => {
     it('should clear all sources', () => {
-      catalog.registerSource(createTestSource({
+      catalog.registerSource({
         id: 'temp',
-        name: 'Temp'
-      }));
+        name: 'Temp',
+        version: '1.0.0',
+        baseUrl: 'https://temp.com',
+        packageName: '@temp/source-temp'
+      });
 
       catalog.clear();
       
@@ -583,10 +552,13 @@ describe('SourceCatalog', () => {
     it('should reload from bundled JSON after clear', () => {
       const initialCount = catalog.getSourceCount();
       
-      catalog.registerSource(createTestSource({
+      catalog.registerSource({
         id: 'temp',
-        name: 'Temp'
-      }));
+        name: 'Temp',
+        version: '1.0.0',
+        baseUrl: 'https://temp.com',
+        packageName: '@temp/source-temp'
+      });
 
       catalog.clear();
       expect(catalog.getSourceCount()).toBe(initialCount);
@@ -656,7 +628,7 @@ describe('Convenience functions', () => {
     it('should return official sources from singleton', () => {
       const results = getOfficialSources();
       expect(Array.isArray(results)).toBe(true);
-      expect(results.every(s => s.metadata.official === true)).toBe(true);
+      expect(results.every(s => s.official === true)).toBe(true);
     });
   });
 
@@ -664,7 +636,7 @@ describe('Convenience functions', () => {
     it('should return SFW sources from singleton', () => {
       const results = getSFWSources();
       expect(Array.isArray(results)).toBe(true);
-      expect(results.every(s => !s.metadata.nsfw)).toBe(true);
+      expect(results.every(s => !s.isNsfw)).toBe(true);
     });
   });
 

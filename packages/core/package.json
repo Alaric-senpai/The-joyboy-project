@@ -45,9 +45,7 @@
   },
   "dependencies": {
     "@joyboy-parser/types": "workspace:*",
-    "@joyboy-parser/source-registry": "workspace:*",
-    "axios": "^1.13.2",
-    "linkedom": "^0.18.12"
+    "axios": "^1.13.2"
   },
   "devDependencies": {
     "tsup": "^8.0.1",
@@ -55,8 +53,7 @@
     "vitest": "^1.0.0"
   },
   "peerDependencies": {
-    "@joyboy-parser/types": "^1.0.0",
-    "@joyboy-parser/source-registry": "1.0.0"
+    "@joyboy-parser/types": "^1.0.0"
   },
   "publishConfig": {
     "access": "public"

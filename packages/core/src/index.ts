@@ -1,5 +1,5 @@
 /**
- * @joyboy/core
+ * @joyboy-parser/core
  * Core SDK and runtime for the JoyBoy parser ecosystem
  * Compatible with Node.js, Browser, and React Native
  */
@@ -23,7 +23,7 @@ export type {
 	SourceError,
 	MangaStatus,
 	ContentRating
-} from '@joyboy/types';
+} from '@joyboy-parser/types';
 
-export { ErrorType, createSourceError } from '@joyboy/types';
+export { ErrorType, createSourceError } from '@joyboy-parser/types';
 

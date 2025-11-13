@@ -46,7 +46,7 @@ async function create() {
 
 	const sourceId = response.name.toLowerCase().replace(/[^a-z0-9]/g, '');
 	const className = response.name.replace(/[^a-zA-Z0-9]/g, '') + 'Source';
-	const packageName = `@joyboy/source-${sourceId}`;
+	const packageName = `@joyboy-parser/source-${sourceId}`;
 	const projectDir = join(process.cwd(), `source-${sourceId}`);
 
 	console.log(chalk.cyan(`\n📦 Creating ${packageName}...`));
@@ -95,8 +95,8 @@ async function create() {
 		keywords: ['joyboy', 'manga', sourceId, 'parser'],
 		license: 'MIT',
 		dependencies: {
-			'@joyboy/core': '^1.0.0',
-			'@joyboy/types': '^1.0.0'
+			'@joyboy-parser/core': '^1.0.0',
+			'@joyboy-parser/types': '^1.0.0'
 		},
 		devDependencies: {
 			tsup: '^8.0.1',
@@ -104,8 +104,8 @@ async function create() {
 			vitest: '^1.0.0'
 		},
 		peerDependencies: {
-			'@joyboy/core': '^1.0.0',
-			'@joyboy/types': '^1.0.0'
+			'@joyboy-parser/core': '^1.0.0',
+			'@joyboy-parser/types': '^1.0.0'
 		}
 	};
 
@@ -142,7 +142,7 @@ export default defineConfig({
 	splitting: false,
 	target: 'es2022',
 	platform: 'neutral',
-	external: ['@joyboy/core', '@joyboy/types']
+	external: ['@joyboy-parser/core', '@joyboy-parser/types']
 });
 `;
 
@@ -162,7 +162,7 @@ npm install ${packageName}
 ## Usage
 
 \`\`\`typescript
-import { JoyBoy } from '@joyboy/core';
+import { JoyBoy } from '@joyboy-parser/core';
 
 await JoyBoy.loadSource('${packageName}');
 const source = JoyBoy.getSource('${sourceId}');

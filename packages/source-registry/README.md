@@ -1,3 +1,4 @@
+
 # @joyboy-parser/source-registry
 
 Dynamic source registry and catalog for JoyBoy parsers.
@@ -10,8 +11,6 @@ Install from npm:
 
 ```bash
 npm install @joyboy-parser/source-registry
-# or with pnpm
-pnpm add @joyboy-parser/source-registry
 ```
 
 ## Platform Support
@@ -30,8 +29,8 @@ import {
   getAllSources,
   getSourceById,
   searchSources,
-  sourceCatalog,
-  SourceCatalog
+  getSourcesByLanguage,
+  sourceCatalog 
 } from '@joyboy-parser/source-registry';
 
 // Get all bundled sources

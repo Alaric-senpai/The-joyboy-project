@@ -2,11 +2,12 @@
  * HTTP request utilities compatible with all runtimes
  */
 
-import type { RequestOptions } from '@joyboy/types';
+import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
+import type { RequestOptions } from '@joyboy-parser/types';
 
 /**
  * Request manager with retry logic and timeout handling
- * Works in Node.js, Browser, and React Native
+ * Works in Node.js, Browser, and React Native using axios
  */
 export class RequestManager {
 	private defaultTimeout = 30000;
@@ -26,35 +27,39 @@ export class RequestManager {
     
 		for (let attempt = 0; attempt < maxRetries; attempt++) {
 			try {
-				const controller = new AbortController();
-				const timeoutId = setTimeout(() => controller.abort(), timeout);
-        
-				const response = await fetch(url, {
+				const axiosConfig: AxiosRequestConfig = {
+					url,
 					method: options?.method || 'GET',
 					headers: options?.headers,
-					body: options?.body ? JSON.stringify(options.body) : undefined,
-					signal: controller.signal
-				});
+					data: options?.body,
+					timeout,
+					validateStatus: (status: number) => status >= 200 && status < 300
+				};
         
-				clearTimeout(timeoutId);
+				const response: AxiosResponse<T> = await axios(axiosConfig);
         
-				if (!response.ok) {
-					throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-				}
-        
-				const contentType = response.headers.get('content-type');
-        
-				if (contentType?.includes('application/json')) {
-					return await response.json() as T;
-				} else {
-					return await response.text() as T;
-				}
+				return response.data;
 			} catch (error) {
+				const axiosError = error as AxiosError;
 				lastError = error as Error;
         
-				// Don't retry on 4xx errors
-				if (lastError.message.includes('HTTP 4')) {
-					throw lastError;
+				// Don't retry on 4xx client errors
+				if (axiosError.response?.status && axiosError.response.status >= 400 && axiosError.response.status < 500) {
+					const errorDetails = {
+						statusCode: axiosError.response.status,
+						statusText: axiosError.response.statusText,
+						url: url,
+						method: options?.method || 'GET',
+						responseData: axiosError.response.data
+					};
+					
+					const error = new Error(`HTTP ${axiosError.response.status}: ${axiosError.response.statusText || axiosError.message}`) as any;
+					error.statusCode = errorDetails.statusCode;
+					error.url = errorDetails.url;
+					error.method = errorDetails.method;
+					error.responseData = errorDetails.responseData;
+					
+					throw error;
 				}
         
 				if (attempt < maxRetries - 1) {
@@ -72,26 +77,25 @@ export class RequestManager {
 	 * Fetch HTML/text content
 	 */
 	async fetchText(url: string, options?: RequestOptions): Promise<string> {
-		const controller = new AbortController();
 		const timeout = options?.timeout ?? this.defaultTimeout;
-		const timeoutId = setTimeout(() => controller.abort(), timeout);
     
 		try {
-			const response = await fetch(url, {
+			const axiosConfig: AxiosRequestConfig = {
+				url,
 				method: options?.method || 'GET',
 				headers: options?.headers,
-				signal: controller.signal
-			});
+				timeout,
+				responseType: 'text'
+			};
       
-			clearTimeout(timeoutId);
+			const response: AxiosResponse<string> = await axios(axiosConfig);
       
-			if (!response.ok) {
-				throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-			}
-      
-			return await response.text();
+			return response.data;
 		} catch (error) {
-			throw new Error(`Failed to fetch text: ${(error as Error).message}`);
+			const axiosError = error as AxiosError;
+			const status = axiosError.response?.status;
+			const statusText = axiosError.response?.statusText || axiosError.message;
+			throw new Error(`Failed to fetch text: HTTP ${status || 'Error'}: ${statusText}`);
 		}
 	}
   

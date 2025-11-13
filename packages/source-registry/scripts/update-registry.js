@@ -18,7 +18,7 @@ const sourcesFile = join(__dirname, '../sources.json');
  * Extract source metadata from package
  */
 function extractSourceMetadata(packagePath, packageJson) {
-  const sourceId = packageJson.name.replace('@joyboy/source-', '');
+  const sourceId = packageJson.name.replace('@joyboy-parser/source-', '');
   
   // Try to load built source to get metadata
   const distPath = join(packagePath, 'dist/index.js');

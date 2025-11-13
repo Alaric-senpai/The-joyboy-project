@@ -10,8 +10,7 @@ import type {
 	SourceCapabilities,
 	SearchOptions,
 	RequestOptions,
-	SourceError,
-	PaginationBase
+	SourceError
 } from '@joyboy-parser/types';
 import { createSourceError, ErrorType } from '@joyboy-parser/types';
 import { RequestManager } from './utils/request';
@@ -25,11 +24,6 @@ export interface Source extends SourceInfo, SourceCapabilities {
 	 * Search for manga by query
 	 */
 	search(query: string, options?: SearchOptions): Promise<Manga[]>;
-
-	/**
-	 * List all mangas
-	 */
-	listAll(options?:SearchOptions):Promise<Manga[]>;
   
 	/**
 	 * Get detailed information about a specific manga

@@ -1,3 +1,64 @@
+// ============================================================================
+// ENHANCED @joyboy/core PACKAGE - INTEGRATED WITH SOURCE REGISTRY
+// ============================================================================
+
+// ============================================================================
+// FILE: packages/core/package.json (UPDATED)
+// ============================================================================
+{
+  "name": "@joyboy/core",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Core SDK and runtime for the JoyBoy parser ecosystem",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "joyboy",
+    "manga",
+    "parser",
+    "core",
+    "sdk"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@joyboy/types": "workspace:*",
+    "@joyboy/source-registry": "workspace:*"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.0",
+    "vitest": "^1.0.0"
+  },
+  "peerDependencies": {
+    "@joyboy/types": "^1.0.0",
+    "@joyboy/source-registry": "^1.0.0"
+  }
+}
+
+// ============================================================================
+// FILE: packages/core/src/github-loader.ts (NEW)
+// ============================================================================
+
+// ============================================================================
+// FILE: packages/core/src/runtime.ts (ENHANCED)
+// ============================================================================
 /**
  * Enhanced JoyBoy runtime with source registry integration
  */
@@ -5,19 +66,23 @@
 import { SourceRegistry } from './registry';
 import { GitHubSourceLoader } from './github-loader';
 import type { Source } from './base-source';
-import type { Manga } from '@joyboy-parser/types';
+import type { Manga } from '@joyboy/types';
 import type { ProgressCallback } from './github-loader';
 
 // Import from source-registry
 import {
-  type RegistrySource,
-  SourceCatalog,
-  getAllSources,
+  createRegistry,
+  syncRegistry as syncRemoteRegistry,
+  getAllSources as getRegistrySources,
   getSourceById,
-  searchSources as searchRegistry,
-  RemoteRegistry,
-  DEFAULT_REGISTRY_URLS
-} from '@joyboy-parser/source-registry';
+  searchSources as searchRegistrySources,
+  markAsInstalled,
+  getInstalledSources,
+  getAvailableSources,
+  type RegistryEntry,
+  type UpdateInfo,
+  type GitHubRegistryConfig
+} from '@joyboy/source-registry';
 
 /**
  * Main JoyBoy runtime class with integrated source registry
@@ -25,29 +90,28 @@ import {
 export class JoyBoy {
   private static registry = SourceRegistry.getInstance();
   private static loader = new GitHubSourceLoader();
-  private static remoteCatalog: SourceCatalog | null = null;
-  private static remoteRegistry: RemoteRegistry | null = null;
+  private static remoteRegistryConfig: GitHubRegistryConfig | null = null;
 
   // ============================================================================
   // CONFIGURATION
   // ============================================================================
 
   /**
-   * Configure remote registry
+   * Configure remote GitHub registry
    * 
-   * @param registryUrl - URL to registry JSON (defaults to jsDelivr CDN)
+   * @param config - GitHub registry configuration
    * 
    * @example
    * ```typescript
-   * JoyBoy.configureRegistry(
-   *   'https://cdn.jsdelivr.net/gh/user/repo@main/registry/sources.json'
-   * );
+   * JoyBoy.configureRegistry({
+   *   owner: 'my-org',
+   *   repo: 'my-sources',
+   *   branch: 'main'
+   * });
    * ```
    */
-  static configureRegistry(registryUrl?: string): void {
-    const url = registryUrl || DEFAULT_REGISTRY_URLS.jsdelivr;
-    this.remoteCatalog = new SourceCatalog(url);
-    this.remoteRegistry = new RemoteRegistry({ registryUrl: url });
+  static configureRegistry(config: GitHubRegistryConfig): void {
+    this.remoteRegistryConfig = config;
   }
 
   // ============================================================================
@@ -55,7 +119,7 @@ export class JoyBoy {
   // ============================================================================
 
   /**
-   * Sync with remote registry
+   * Sync with remote GitHub registry
    * 
    * @returns Promise that resolves when sync is complete
    * 
@@ -66,80 +130,76 @@ export class JoyBoy {
    * ```
    */
   static async syncRegistry(): Promise<void> {
-    if (!this.remoteCatalog) {
-      this.configureRegistry();
+    if (this.remoteRegistryConfig) {
+      const catalog = createRegistry(this.remoteRegistryConfig);
+      await catalog.sync();
+    } else {
+      await syncRemoteRegistry();
     }
-    await this.remoteCatalog!.syncWithRemote();
   }
 
   /**
-   * Browse all available sources in the registry
+   * Browse available sources from registry
    * 
-   * @returns Array of all source registry entries
+   * @returns Array of available sources
    * 
    * @example
    * ```typescript
    * const sources = JoyBoy.browseSources();
-   * sources.forEach(s => console.log(s.name));
+   * console.log(`Found ${sources.length} sources`);
    * ```
    */
-  static browseSources(): RegistrySource[] {
-    if (this.remoteCatalog) {
-      return this.remoteCatalog.getAllSources();
-    }
-    return getAllSources();
+  static browseSources(): RegistryEntry[] {
+    return getRegistrySources();
   }
 
   /**
-   * Search for sources in the registry
+   * Search for sources in registry
    * 
-   * @param query - Search query (name, id, description, tags)
-   * @returns Matching registry entries
+   * @param query - Search query
+   * @returns Matching sources
    * 
    * @example
    * ```typescript
-   * const mangaSources = JoyBoy.searchSources('manga');
-   * const apiSources = JoyBoy.searchSources('api');
+   * const results = JoyBoy.searchSources('manga');
    * ```
    */
-  static searchSources(query: string): RegistrySource[] {
-    if (this.remoteCatalog) {
-      return this.remoteCatalog.searchSources(query);
-    }
-    return searchRegistry(query);
+  static searchSources(query: string): RegistryEntry[] {
+    return searchRegistrySources(query);
   }
 
   /**
-   * Get source registry information
+   * Get source info from registry
    * 
    * @param sourceId - Source identifier
-   * @returns Registry entry or undefined if not found
+   * @returns Registry entry or undefined
+   * 
+   * @example
+   * ```typescript
+   * const info = JoyBoy.getSourceInfo('mangadex');
+   * console.log(info?.name);
+   * ```
    */
-  static getSourceInfo(sourceId: string): RegistrySource | undefined {
-    if (this.remoteCatalog) {
-      return this.remoteCatalog.getSource(sourceId);
-    }
+  static getSourceInfo(sourceId: string): RegistryEntry | undefined {
     return getSourceById(sourceId);
   }
 
   /**
-   * Get information about installed sources
+   * Get all installed sources info
    * 
-   * @returns Array of installed source registry entries
+   * @returns Array of installed source info
    */
-  static getInstalledSourcesInfo(): RegistrySource[] {
-    const installed = this.registry.list().map(s => s.id);
-    return this.browseSources().filter(s => installed.includes(s.id));
+  static getInstalledSourcesInfo(): RegistryEntry[] {
+    return getInstalledSources();
   }
 
   /**
-   * Get information about available (not installed) sources
+   * Get all available (not installed) sources info
    * 
-   * @returns Array of available source registry entries
+   * @returns Array of available source info
    */
-  static getAvailableSourcesInfo(): RegistrySource[] {
-    const installed = this.registry.list().map(s => s.id);
-    return this.browseSources().filter(s => !installed.includes(s.id));
+  static getAvailableSourcesInfo(): RegistryEntry[] {
+    return getAvailableSources();
   }
 
   // ============================================================================
@@ -147,7 +207,7 @@ export class JoyBoy {
   // ============================================================================
 
   /**
-   * Install source from registry
+   * Install source from GitHub registry
    * 
    * @param sourceId - Source identifier from registry
    * @param onProgress - Optional progress callback
@@ -164,18 +224,21 @@ export class JoyBoy {
     sourceId: string,
     onProgress?: ProgressCallback
   ): Promise<Source> {
-    const entry = this.getSourceInfo(sourceId);
+    const entry = getSourceById(sourceId);
 
     if (!entry) {
       throw new Error(`Source not found in registry: ${sourceId}`);
     }
 
     try {
-      // Load source from the download URL
+      // Load source from GitHub
       const source = await this.loader.loadFromRegistry(entry, onProgress);
 
       // Register in local registry
       this.registry.register(source);
+
+      // Mark as installed in remote registry
+      markAsInstalled(sourceId, true);
 
       return source;
     } catch (error) {
@@ -199,6 +262,9 @@ export class JoyBoy {
 
     // Clear cache
     this.loader.clearCache(sourceId);
+
+    // Mark as not installed
+    markAsInstalled(sourceId, false);
   }
 
   /**
@@ -230,37 +296,33 @@ export class JoyBoy {
   /**
    * Check for available updates
    * 
-   * @returns Array of sources with updates available
+   * @returns Array of update information
    * 
    * @example
    * ```typescript
    * const updates = await JoyBoy.checkForUpdates();
-   * updates.forEach(source => {
-   *   console.log(`${source.name}: Update available to ${source.version}`);
+   * updates.forEach(update => {
+   *   console.log(`${update.sourceId}: ${update.currentVersion} -> ${update.newVersion}`);
    * });
    * ```
    */
-  static async checkForUpdates(): Promise<RegistrySource[]> {
+  static async checkForUpdates(): Promise<UpdateInfo[]> {
     // Sync registry first
     await this.syncRegistry();
 
-    // Get installed sources with their current info
+    // Get installed sources
     const installed = this.registry.list();
-    const installedVersions = new Map(
+    const installedMap = new Map(
       installed.map(s => [s.id, s.version])
     );
 
-    // Get latest versions from registry
-    const available = this.browseSources();
-    
-    // Find sources with newer versions
-    return available.filter(source => {
-      const installedVersion = installedVersions.get(source.id);
-      if (!installedVersion) return false;
-      
-      // Simple version comparison (can be enhanced with semver)
-      return source.version !== installedVersion;
-    });
+    // Get available updates from registry
+    const { GitHubRegistry, DEFAULT_GITHUB_CONFIG } = await import('@joyboy/source-registry');
+    const githubRegistry = new GitHubRegistry(
+      this.remoteRegistryConfig || DEFAULT_GITHUB_CONFIG
+    );
+
+    return githubRegistry.checkUpdates(installedMap);
   }
 
   /**
@@ -282,11 +344,11 @@ export class JoyBoy {
 
     for (const update of updates) {
       try {
-        await this.updateSource(update.id, (progress, status) => {
-          onProgress?.(update.id, progress, status);
+        await this.updateSource(update.sourceId, (progress, status) => {
+          onProgress?.(update.sourceId, progress, status);
         });
       } catch (error) {
-        console.error(`Failed to update ${update.id}:`, error);
+        console.error(`Failed to update ${update.sourceId}:`, error);
       }
     }
   }
@@ -508,3 +570,180 @@ export class JoyBoy {
     }
   }
 }
+
+// ============================================================================
+// FILE: packages/core/src/index.ts (UPDATED)
+// ============================================================================
+/**
+ * @joyboy/core
+ * Core SDK and runtime for the JoyBoy parser ecosystem
+ * Integrated with GitHub-based source registry
+ */
+
+// Export main runtime
+export { JoyBoy } from './runtime';
+
+// Export base classes
+export { BaseSource } from './base-source';
+export type { Source } from './base-source';
+
+// Export registry
+export { SourceRegistry } from './registry';
+
+// Export utilities
+export { RequestManager } from './utils/request';
+export { CacheManager } from './utils/cache';
+export { isSourceError, formatError, isRetryableError } from './utils/errors';
+
+// Export GitHub loader
+export { GitHubSourceLoader } from './github-loader';
+export type { ProgressCallback } from './github-loader';
+
+// Re-export types from @joyboy/types
+export type {
+  Manga,
+  Chapter,
+  Page,
+  SourceInfo,
+  SourceCapabilities,
+  SearchOptions,
+  RequestOptions,
+  SourceError,
+  MangaStatus,
+  ContentRating
+} from '@joyboy/types';
+
+export { ErrorType, createSourceError } from '@joyboy/types';
+
+// Re-export registry types for convenience
+export type {
+  RegistryEntry,
+  UpdateInfo,
+  RegistryStats,
+  GitHubRegistryConfig
+} from '@joyboy/source-registry';
+
+// ============================================================================
+// USAGE EXAMPLES
+// ============================================================================
+
+/*
+// =============================================================================
+// EXAMPLE 1: Basic Usage with Registry
+// =============================================================================
+
+import { JoyBoy } from '@joyboy/core';
+
+async function basicExample() {
+  // 1. Sync with remote registry
+  await JoyBoy.syncRegistry();
+  
+  // 2. Browse available sources
+  const sources = JoyBoy.browseSources();
+  console.log(`Found ${sources.length} sources`);
+  
+  // 3. Install a source
+  await JoyBoy.installSource('mangadex', (progress, status) => {
+    console.log(`${progress}%: ${status}`);
+  });
+  
+  // 4. Use the source
+  const mangadex = JoyBoy.getSource('mangadex');
+  const results = await mangadex.search('One Piece');
+  
+  console.log(`Found ${results.length} results`);
+}
+
+// =============================================================================
+// EXAMPLE 2: React Native App
+// =============================================================================
+
+import React, { useState, useEffect } from 'react';
+import { View, Text, FlatList, Button, ActivityIndicator } from 'react-native';
+import { JoyBoy } from '@joyboy/core';
+
+function SourceManagerScreen() {
+  const [sources, setSources] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [installing, setInstalling] = useState(null);
+  const [progress, setProgress] = useState({ percent: 0, status: '' });
+
+  useEffect(() => {
+    loadSources();
+  }, []);
+
+  async function loadSources() {
+    try {
+      // Sync with GitHub registry
+      await JoyBoy.syncRegistry();
+      
+      // Get all sources
+      const available = JoyBoy.browseSources();
+      const installed = JoyBoy.listSources().map(s => s.id);
+      
+      setSources(available.map(s => ({
+        ...s,
+        isInstalled: installed.includes(s.id)
+      })));
+    } catch (error) {
+      console.error('Failed to load sources:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function installSource(sourceId) {
+    setInstalling(sourceId);
+    
+    try {
+      await JoyBoy.installSource(sourceId, (percent, status) => {
+        setProgress({ percent, status });
+      });
+      
+      await loadSources();
+      alert('Source installed successfully!');
+    } catch (error) {
+      alert(`Installation failed: ${error.message}`);
+    } finally {
+      setInstalling(null);
+      setProgress({ percent: 0, status: '' });
+    }
+  }
+
+  async function uninstallSource(sourceId) {
+    try {
+      JoyBoy.uninstallSource(sourceId);
+      await loadSources();
+      alert('Source uninstalled');
+    } catch (error) {
+      alert(`Uninstall failed: ${error.message}`);
+    }
+  }
+
+  if (loading) {
+    return <ActivityIndicator size="large" />;
+  }
+
+  return (
+    <View style={{ flex: 1, padding: 16 }}>
+      <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 16 }}>
+        Source Manager
+      </Text>
+
+      {installing && (
+        <View style={{ padding: 16, backgroundColor: '#f0f0f0', marginBottom: 16 }}>
+          <Text>Installing {installing}...</Text>
+          <Text>{progress.status}</Text>
+          <View style={{ width: '100%', height: 4, backgroundColor: '#ddd', marginTop: 8 }}>
+            <View style={{ width: `${progress.percent}%`, height: '100%', backgroundColor: '#2196f3' }} />
+          </View>
+        </View>
+      )}
+
+      <FlatList
+        data={sources}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <View style={{ padding: 16, marginBottom: 12, backgroundColor: '#f5f5f5' }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold' }}>{item.name}</Text>
+            <Text style={{ color

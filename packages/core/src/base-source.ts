@@ -10,7 +10,8 @@ import type {
 	SourceCapabilities,
 	SearchOptions,
 	RequestOptions,
-	SourceError
+	SourceError,
+	PaginationBase
 } from '@joyboy-parser/types';
 import { createSourceError, ErrorType } from '@joyboy-parser/types';
 import { RequestManager } from './utils/request';
@@ -204,7 +205,7 @@ export abstract class BaseSource implements Source {
 	 *
 	 * Note: callers may choose to parse themselves; `fetchHtml` returns raw HTML.
 	 */
-	protected parseHtml(html: string) {
+	protected transformToHtml(html: string) {
 		return parseHTML(html);
 	}
   

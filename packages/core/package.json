@@ -1,6 +1,6 @@
 {
   "name": "@joyboy-parser/core",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "description": "Core SDK and runtime for the JoyBoy parser ecosystem",
   "main": "./dist/index.js",
@@ -45,15 +45,19 @@
   },
   "dependencies": {
     "@joyboy-parser/types": "workspace:*",
-    "axios": "^1.13.2"
+    "@joyboy-parser/source-registry": "workspace:*",
+    "axios": "^1.13.2",
+    "linkedom": "^0.18.12"
   },
   "devDependencies": {
-    "tsup": "^8.0.1",
-    "typescript": "^5.3.0",
-    "vitest": "^1.0.0"
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^1.6.1"
   },
   "peerDependencies": {
-    "@joyboy-parser/types": "^1.0.0"
+    "@joyboy-parser/types": "^1.0.1",
+    "@joyboy-parser/source-registry": "1.0.0"
+
   },
   "publishConfig": {
     "access": "public"

@@ -96,7 +96,7 @@ async function create() {
 		license: 'MIT',
 		dependencies: {
 			'@joyboy-parser/core': '^1.0.0',
-			'@joyboy-parser/types': '^1.0.0'
+			'@joyboy-parser/types': '^1.0.1'
 		},
 		devDependencies: {
 			tsup: '^8.0.1',
@@ -105,7 +105,7 @@ async function create() {
 		},
 		peerDependencies: {
 			'@joyboy-parser/core': '^1.0.0',
-			'@joyboy-parser/types': '^1.0.0'
+			'@joyboy-parser/types': '^1.0.1'
 		}
 	};
 

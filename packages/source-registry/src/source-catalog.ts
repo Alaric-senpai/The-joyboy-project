@@ -45,7 +45,7 @@ export class SourceCatalog {
   private sources: Map<string, RegistrySource> = new Map();
   private remoteRegistry: RemoteRegistry;
 
-  constructor(remoteRegistryUrl: string = DEFAULT_REGISTRY_URLS.github) {
+  constructor(remoteRegistryUrl: string = DEFAULT_REGISTRY_URLS.jsdelivr) {
     this.loadFromJSON(); // Load bundled sources
 
     this.remoteRegistry = createRemoteRegistry(remoteRegistryUrl);

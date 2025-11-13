@@ -253,8 +253,8 @@ export class RemoteRegistry {
  * Default registry URLs
  */
 export const DEFAULT_REGISTRY_URLS = {
-  github: 'https://raw.githubusercontent.com/Alaric-senpai/The-joyboy-project/main/registry/sources.json',
   jsdelivr: 'https://cdn.jsdelivr.net/gh/Alaric-senpai/The-joyboy-project@main/registry/sources.json',
+  github: 'https://raw.githubusercontent.com/Alaric-senpai/The-joyboy-project/main/registry/sources.json',
   custom: 'https://api.joyboy.dev/registry',
 } as const;
 
@@ -293,7 +293,7 @@ export const DEFAULT_REGISTRY_URLS = {
  * ```
  */
 export function createRemoteRegistry(
-  url: string = DEFAULT_REGISTRY_URLS.github,
+  url: string = DEFAULT_REGISTRY_URLS.jsdelivr,
   config?: Omit<RemoteRegistryConfig, 'registryUrl'>
 ): RemoteRegistry {
   return new RemoteRegistry({ 

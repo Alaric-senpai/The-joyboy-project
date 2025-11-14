@@ -105,12 +105,13 @@ async function create() {
 			test: 'vitest',
 			clean: 'rm -rf dist',
 			'validate-meta': 'node scripts/validate-meta.js',
-			'demo': 'pnpm build:demo && node dist/demo.js'
+			'demo': 'pnpm build:demo && node dist/demo.js',
+			'gen-hash': 'pnpm build && shasum -a dist/index.js'
 		},
 		keywords: ['joyboy', 'manga', sourceId, 'parser'],
 		license: 'MIT',
 		dependencies: {
-			'@joyboy-parser/core': '^1.0.1',
+			'@joyboy-parser/core': '^1.0.2',
 			'@joyboy-parser/types': '^1.0.1'
 		},
 		devDependencies: {
@@ -121,7 +122,7 @@ async function create() {
 			'ajv-formats': '^3.0.1'
 		},
 		peerDependencies: {
-			'@joyboy-parser/core': '^1.0.1',
+			'@joyboy-parser/core': '^1.0.2',
 			'@joyboy-parser/types': '^1.0.1'
 		}
 	};
@@ -187,10 +188,8 @@ npm install ${packageName}
 ## Usage
 
 \`\`\`typescript
-import { JoyBoy } from '@joyboy-parser/core';
 
-await JoyBoy.loadSource('${packageName}');
-const source = JoyBoy.getSource('${sourceId}');
+const source = new ${packageName}();
 
 const results = await source.search('query');
 const manga = await source.getMangaDetails(results[0].id);
@@ -208,6 +207,12 @@ const pages = await source.getChapterPages(chapters[0].id);
 
 When publishing or submitting your source to a registry, make sure to include the compiled \`dist\` folder and its contents (JS files and type declarations). The registry expects the distributable files under the package's \`dist\` folder so they can be loaded by the runtime.
 
+## additional
+- generate integrity sha256
+
+pnpm gen-hash
+
+
 Additionally, this template generates a \`source-meta.json\` file containing registry-friendly metadata. Ensure you review and update the generated \`source-meta.json\` before submitting; you can validate it with \`pnpm run validate-meta\`.
 
 ## License
@@ -222,9 +227,11 @@ writeFileSync(join(projectDir, 'README.md'), readme);
 
 async function run() {
   const source = new ${className}();
+
+  const searchTerm = "one piece"
   console.log('Source id:', source.id);
   try {
-    const results = await source.search('test');
+    const results = await source.search(searchTerm);
     console.log('Search results (sample):', results.slice(0, 3));
   } catch (err) {
     const error = err as Error;

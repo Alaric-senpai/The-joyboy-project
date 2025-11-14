@@ -24,6 +24,8 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import https from 'https';
 import http from 'http';
+import readline from 'readline/promises';
+import { stdin as input, stdout as output } from 'process';
 
 const execAsync = promisify(exec);
 
@@ -63,7 +65,7 @@ function info(msg) {
 
 function header(msg) {
   log(colors.magenta, '\n' + '='.repeat(60));
-  log(colors.magenta, msg);
+  log(colors.blue, msg);
   log(colors.magenta, '='.repeat(60));
 }
 
@@ -271,7 +273,17 @@ async function checkDownloads(downloads) {
 
 // Check if source already exists in registry
 function isDuplicate(registry, sourceMeta) {
-  return registry.sources.some(source => source.id === sourceMeta.id);
+  // Consider duplicates by id, name, repository, or download URLs
+  return registry.sources.some(source => {
+    if (source.id === sourceMeta.id) return true;
+    if (source.name && sourceMeta.name && source.name === sourceMeta.name) return true;
+    if (source.repository && sourceMeta.repository && source.repository === sourceMeta.repository) return true;
+    if (source.downloads && sourceMeta.downloads) {
+      if (source.downloads.stable === sourceMeta.downloads.stable) return true;
+      if (source.downloads.latest === sourceMeta.downloads.latest) return true;
+    }
+    return false;
+  });
 }
 
 // Add source to registry
@@ -437,25 +449,38 @@ async function main() {
   info(`Current registry: ${registry.sources.length} source(s)`);
 
   let sourcesToAdd = [];
-
-  // Check if URL provided
+  // Check if URL provided via CLI args
   const urlIndex = args.indexOf('--url');
   if (urlIndex !== -1 && args[urlIndex + 1]) {
     const metaUrl = args[urlIndex + 1];
-    
     if (!validateUrl(metaUrl)) {
       error('Invalid URL provided');
       process.exit(1);
     }
-
     const sourceMeta = await processExternalSource(metaUrl);
-    if (sourceMeta) {
-      sourcesToAdd.push(sourceMeta);
-    }
+    if (sourceMeta) sourcesToAdd.push(sourceMeta);
   } else {
-    // Scan local sources
-    header('Scanning Local Sources');
-    sourcesToAdd = await scanLocalSources();
+    // No CLI URL provided - prompt the user interactively
+    const rl = readline.createInterface({ input, output });
+    try {
+      const answer = await rl.question('Enter a source-meta.json URL to add (leave empty to scan local packages/sources): ');
+      const metaUrl = answer && answer.trim();
+      if (metaUrl) {
+        if (!validateUrl(metaUrl)) {
+          error('Invalid URL provided');
+          rl.close();
+          process.exit(1);
+        }
+        const sourceMeta = await processExternalSource(metaUrl);
+        if (sourceMeta) sourcesToAdd.push(sourceMeta);
+      } else {
+        // Scan local sources
+        header('Scanning Local Sources');
+        sourcesToAdd = await scanLocalSources();
+      }
+    } finally {
+      rl.close();
+    }
   }
 
   // Add sources to registry

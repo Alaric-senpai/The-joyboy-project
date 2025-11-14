@@ -1,10 +1,11 @@
 {
   "name": "@joyboy-parser/source-template",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "type": "module",
   "description": "CLI tool and template for creating new JoyBoy source parsers",
   "bin": {
-    "create-joyboy-source": "./scripts/create.js"
+    "create-joyboy-source": "./scripts/create.js",
+    "create-joyboy-source@latest": "https://github.com/Alaric-senpai/The-joyboy-project/tree/main/packages/source-template/scripts/create.js"
   },
   "files": [
     "template",

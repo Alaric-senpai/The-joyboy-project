@@ -20,6 +20,7 @@ export default class {{SOURCE_CLASS_NAME}} extends BaseSource {
 	baseUrl = '{{BASE_URL}}'; // TODO: Replace with actual base url
 	icon = ''; // Optional
 	description = '{{SOURCE_NAME}} parser for JoyBoy';
+	languages= ['en']
 
 	// Capabilities
 	supportsSearch = true;

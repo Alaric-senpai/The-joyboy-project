@@ -1,6 +1,9 @@
 node_modules
 .turbo
 paste*
+
+# Ignore dist folders globally
 dist
-# PUBLISHING.md
-PUBLISHING.md
+
+# BUT allow dist folders in packages/sources/ directory (needed for publishing)
+!packages/sources/**/dist

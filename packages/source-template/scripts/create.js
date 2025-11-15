@@ -111,7 +111,7 @@ async function create() {
 		keywords: ['joyboy', 'manga', sourceId, 'parser'],
 		license: 'MIT',
 		dependencies: {
-			'@joyboy-parser/core': '^1.0.2',
+			'@joyboy-parser/core': '^1.0.3',
 			'@joyboy-parser/types': '^1.0.1'
 		},
 		devDependencies: {
@@ -122,7 +122,7 @@ async function create() {
 			'ajv-formats': '^3.0.1'
 		},
 		peerDependencies: {
-			'@joyboy-parser/core': '^1.0.2',
+			'@joyboy-parser/core': '^1.0.3',
 			'@joyboy-parser/types': '^1.0.1'
 		}
 	};

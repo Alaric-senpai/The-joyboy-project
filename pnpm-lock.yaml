@@ -30,11 +30,11 @@ importers:
   packages/core:
     dependencies:
       '@joyboy-parser/source-registry':
-        specifier: workspace:*
-        version: link:../source-registry
+        specifier: ^1.0.1
+        version: 1.0.1(@joyboy-parser/types@1.0.1)
       '@joyboy-parser/types':
-        specifier: workspace:*
-        version: link:../types
+        specifier: ^1.0.1
+        version: 1.0.1
       axios:
         specifier: ^1.13.2
         version: 1.13.2
@@ -55,8 +55,8 @@ importers:
   packages/source-registry:
     dependencies:
       '@joyboy-parser/types':
-        specifier: workspace:*
-        version: link:../types
+        specifier: ^1.0.1
+        version: 1.0.1
     devDependencies:
       tsup:
         specifier: ^8.0.1
@@ -80,8 +80,8 @@ importers:
   packages/sources/source-mangadex:
     dependencies:
       '@joyboy-parser/core':
-        specifier: ^1.0.2
-        version: 1.0.2(@joyboy-parser/source-registry@1.0.1(@joyboy-parser/types@1.0.1))(@joyboy-parser/types@1.0.1)
+        specifier: ^1.0.3
+        version: 1.0.3(@joyboy-parser/source-registry@1.0.1(@joyboy-parser/types@1.0.1))(@joyboy-parser/types@1.0.1)
       '@joyboy-parser/types':
         specifier: ^1.0.1
         version: 1.0.1
@@ -639,8 +639,8 @@ packages:
     resolution: {integrity: sha512-mo5j5X+jIZmJQveBKeS/clAueipV7KgiX1vMgCxam1RNYiqE1w62n0/tJJnHtjW8ZHcQco5gY85jA3mi0L+nSA==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
 
-  '@joyboy-parser/core@1.0.2':
-    resolution: {integrity: sha512-eBk7Vkh/BqO8TmXAP9yfEEGDQ9CV0aHmit19Jnv8O7B3t0nWTALUeUv9dj8vXhAlgxe8N+gKQ26LPVfr2lBhqw==}
+  '@joyboy-parser/core@1.0.3':
+    resolution: {integrity: sha512-VbDxSa85CnG/QvlLtlFzeAkSNhwNgV0dcty9sbiTC7znF8ZyDurE4fHa+Bjm9EW8g02cM89EWGGDd6NPjJSBLQ==}
     peerDependencies:
       '@joyboy-parser/source-registry': 1.0.1
       '@joyboy-parser/types': ^1.0.1
@@ -2374,7 +2374,7 @@ snapshots:
     dependencies:
       '@sinclair/typebox': 0.27.8
 
-  '@joyboy-parser/core@1.0.2(@joyboy-parser/source-registry@1.0.1(@joyboy-parser/types@1.0.1))(@joyboy-parser/types@1.0.1)':
+  '@joyboy-parser/core@1.0.3(@joyboy-parser/source-registry@1.0.1(@joyboy-parser/types@1.0.1))(@joyboy-parser/types@1.0.1)':
     dependencies:
       '@joyboy-parser/source-registry': 1.0.1(@joyboy-parser/types@1.0.1)
       '@joyboy-parser/types': 1.0.1

@@ -1,6 +1,6 @@
 {
   "name": "@joyboy-parser/core",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "type": "module",
   "description": "Core SDK and runtime for the JoyBoy parser ecosystem",
   "main": "./dist/index.js",
@@ -44,8 +44,8 @@
     "url": "https://github.com/Alaric-senpai/The-joyboy-project/issues"
   },
   "dependencies": {
-    "@joyboy-parser/types": "workspace:*",
-    "@joyboy-parser/source-registry": "workspace:*",
+    "@joyboy-parser/types": "^1.0.1",
+    "@joyboy-parser/source-registry": "^1.0.1",
     "axios": "^1.13.2",
     "linkedom": "^0.18.12"
   },
@@ -57,7 +57,6 @@
   "peerDependencies": {
     "@joyboy-parser/types": "^1.0.1",
     "@joyboy-parser/source-registry": "1.0.1"
-
   },
   "publishConfig": {
     "access": "public"

@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "metadata": {
-    "lastUpdated": "2025-11-13T11:23:56.966Z",
+    "lastUpdated": "2025-11-17T09:27:31.090Z",
     "totalSources": 1,
     "maintainer": "JoyBoy Community",
     "url": "https://github.com/Alaric-senpai/The-joyboy-project",
@@ -32,10 +32,14 @@
         ],
         "official": false,
         "nsfw": false,
-        "tags": ["mangadex", "api", "manga"],
-        "lastUpdated": "2025-11-14T07:30:10.234Z",
+        "tags": [
+          "mangadex",
+          "api",
+          "manga"
+        ],
+        "lastUpdated": "2025-11-17T07:30:10.234Z",
         "minCoreVersion": "1.0.1",
-        "maxCoreVersion": "1.0.1",
+        "maxCoreVersion": "2.0.0",
         "websiteUrl": "https://mangadex.org",
         "supportUrl": "https://mangadex.org"
       },
@@ -80,13 +84,11 @@
     "api": [
       "mangadex"
     ],
-    "scraper": [
-    ],
+    "scraper": [],
     "multi-language": [
       "mangadex"
     ],
-    "english-only": [
-    ],
+    "english-only": [],
     "nsfw": [],
     "sfw": [
       "mangadex"

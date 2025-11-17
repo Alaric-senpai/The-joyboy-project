@@ -2,6 +2,9 @@ import { BaseSource } from '@joyboy-parser/core';
 
 // src/index.ts
 var MangaDexSource = class extends BaseSource {
+  getbyPage(searchLabel, pageNumber) {
+    throw new Error("Method not implemented.");
+  }
   id = "mangadex";
   name = "MangaDex";
   version = "1.0.0";
@@ -160,7 +163,7 @@ var MangaDexSource = class extends BaseSource {
   /**
    * Get manga by page number for a search term
    */
-  async getbyPage(searchLabel, pageNumber) {
+  async getByPage(searchLabel, pageNumber) {
     return this.search(searchLabel, { page: pageNumber });
   }
   /**

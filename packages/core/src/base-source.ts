@@ -15,6 +15,7 @@ import type {
 } from '@joyboy-parser/types';
 import { createSourceError, ErrorType } from '@joyboy-parser/types';
 import { RequestManager } from './utils/request';
+import { CacheManager } from './utils/cache';
 import { parseHTML } from 'linkedom';
 
 /**
@@ -37,13 +38,15 @@ export interface Source extends SourceInfo, SourceCapabilities {
 	getChapters(mangaId: string): Promise<Chapter[]>;
   
 
+	/**
+	 * Get manga by page
+	 */
+	getByPage(searchLabel: string, pageNumber: number): Promise<Manga[]>;
 
 	/**
-	 * get items by page 
-	 * @param searchLabel 
-	 * @param pageNumber 
+	 * List all manga (optional, with pagination)
 	 */
-	getbyPage(searchLabel:string, pageNumber:number):Promise<Manga[]>;
+	listAll?(options?: SearchOptions): Promise<Manga[]>;
 
 	/**
 	 * Get all pages for a specific chapter
@@ -94,22 +97,43 @@ export abstract class BaseSource implements Source {
 	supportsPopular = false;
 
 	protected requestManager: RequestManager;
+	protected cacheManager?: CacheManager;
 
-	// protected 
-
-	constructor() {
+	constructor(options?: { enableCache?: boolean; cacheTTL?: number }) {
 		this.requestManager = new RequestManager();
+		if (options?.enableCache) {
+			this.cacheManager = new CacheManager();
+		}
 	}
 
 	/**
 	 * Make an HTTP request with built-in retry and error handling
+	 * @param url - URL to request
+	 * @param options - Request options including cache settings
 	 */
 	protected async request<T = any>(
 		url: string,
-		options?: RequestOptions
+		options?: RequestOptions & { cache?: boolean; cacheTTL?: number }
 	): Promise<T> {
+		// Check cache first if enabled
+		if (options?.cache && this.cacheManager) {
+			const cacheKey = this.getCacheKey(url, options);
+			const cached = this.cacheManager.get<T>(cacheKey);
+			if (cached !== null) {
+				return cached;
+			}
+		}
+
 		try {
-			return await this.requestManager.request<T>(url, options);
+			const result = await this.requestManager.request<T>(url, options);
+			
+			// Cache successful responses
+			if (options?.cache && this.cacheManager) {
+				const cacheKey = this.getCacheKey(url, options);
+				this.cacheManager.set(cacheKey, result, options.cacheTTL);
+			}
+			
+			return result;
 		} catch (error) {
 			const err = error as any;
 			const context: Record<string, any> = {};
@@ -127,6 +151,15 @@ export abstract class BaseSource implements Source {
 				context
 			);
 		}
+	}
+
+	/**
+	 * Generate cache key for a request
+	 */
+	private getCacheKey(url: string, options?: RequestOptions): string {
+		const method = options?.method || 'GET';
+		const params = options?.params ? JSON.stringify(options.params) : '';
+		return `${method}:${url}:${params}`;
 	}
   
 	/**
@@ -213,13 +246,12 @@ export abstract class BaseSource implements Source {
 	 * Abstract methods that must be implemented
 	 */
 
-
 	/**
-	 * 
-	 * @param searchLabel @default page
-	 * @param pageNumber 
+	 * Get manga by page (must be implemented by subclasses)
+	 * @param searchLabel - Search category/label (e.g., "latest", "popular")
+	 * @param pageNumber - Page number (1-indexed)
 	 */
-	abstract getbyPage(searchLabel: string, pageNumber: number): Promise<Manga[]>;
+	abstract getByPage(searchLabel: string, pageNumber: number): Promise<Manga[]>;
 
 
 	abstract listAll(options?: SearchOptions): Promise<Manga[]>;

@@ -84,7 +84,7 @@ async function create() {
 	// Create package.json
  	const packageJson = {
  		name: packageName,
- 		version: '1.0.1',
+ 		version: '1.0.0',
 		type: 'module',
 		description: response.description || `${response.name} parser for JoyBoy`,
 		main: './dist/index.js',
@@ -106,13 +106,13 @@ async function create() {
 			clean: 'rm -rf dist',
 			'validate-meta': 'node scripts/validate-meta.js',
 			'demo': 'pnpm build:demo && node dist/demo.js',
-			'gen-hash': 'pnpm build && shasum -a dist/index.js'
+			'gen-hash': 'pnpm build && shasum -a 256 dist/index.js'
 		},
 		keywords: ['joyboy', 'manga', sourceId, 'parser'],
 		license: 'MIT',
 		dependencies: {
-			'@joyboy-parser/core': '^1.0.3',
-			'@joyboy-parser/types': '^1.0.1'
+			'@joyboy-parser/core': '^1.1.4',
+			'@joyboy-parser/types': '^1.1.1'
 		},
 		devDependencies: {
 			tsup: '^8.0.1',
@@ -122,8 +122,8 @@ async function create() {
 			'ajv-formats': '^3.0.1'
 		},
 		peerDependencies: {
-			'@joyboy-parser/core': '^1.0.3',
-			'@joyboy-parser/types': '^1.0.1'
+			'@joyboy-parser/core': '^1.1.4',
+			'@joyboy-parser/types': '^1.1.1'
 		}
 	};
 
@@ -211,6 +211,11 @@ When publishing or submitting your source to a registry, make sure to include th
 - generate integrity sha256
 
 pnpm gen-hash
+
+
+all downlaods links are to be made available via jsdeliver or github rawcontent
+
+
 
 
 Additionally, this template generates a \`source-meta.json\` file containing registry-friendly metadata. Ensure you review and update the generated \`source-meta.json\` before submitting; you can validate it with \`pnpm run validate-meta\`.

@@ -1,6 +1,6 @@
 {
   "name": "@joyboy-parser/source-registry",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "type": "module",
   "description": "Dynamic source registry and catalog for JoyBoy parsers",
   "author": "JoyBoy Contributors",
@@ -49,7 +49,7 @@
     "url": "https://github.com/Alaric-senpai/The-joyboy-project/issues"
   },
   "dependencies": {
-    "@joyboy-parser/types": "^1.0.1"
+    "@joyboy-parser/types": "^1.1.1"
   },
   "devDependencies": {
     "tsup": "^8.0.1",
@@ -57,6 +57,6 @@
     "vitest": "^1.0.0"
   },
   "peerDependencies": {
-    "@joyboy-parser/types": "^1.0.0"
+    "@joyboy-parser/types": "^1.1.1"
   }
 }

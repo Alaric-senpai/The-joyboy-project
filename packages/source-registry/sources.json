@@ -8,70 +8,7 @@
     "description": "Official JoyBoy source registry - Cross-platform manga parser sources",
     "license": "MIT"
   },
-  "sources": [
-    {
-      "id": "mangadex",
-      "name": "MangaDex",
-      "version": "1.0.0",
-      "baseUrl": "https://api.mangadex.org",
-      "description": "Official MangaDex API parser",
-      "icon": "https://mangadex.org/favicon.ico",
-      "author": "Alaric-senpai",
-      "repository": "https://github.com/Alaric-senpai/The-joyboy-project.git",
-      "downloads": {
-        "stable": "https://cdn.jsdelivr.net/gh/Alaric-senpai/The-joyboy-project@main/packages/sources/source-mangadex/dist/index.js",
-        "latest": "https://cdn.jsdelivr.net/gh/Alaric-senpai/The-joyboy-project@main/packages/sources/source-mangadex/dist/index.js",
-        "versions": {}
-      },
-      "integrity": {
-        "sha256": "bc33822547b8ff31d444d6b0b5073f0dcb8be9a354d0c4be80ecf6cf2c46bac6"
-      },
-      "metadata": {
-        "languages": [
-          "en"
-        ],
-        "official": false,
-        "nsfw": false,
-        "tags": ["mangadex", "api", "manga"],
-        "lastUpdated": "2025-11-14T07:30:10.234Z",
-        "minCoreVersion": "1.0.1",
-        "maxCoreVersion": "1.0.1",
-        "websiteUrl": "https://mangadex.org",
-        "supportUrl": "https://mangadex.org"
-      },
-      "legal": {
-        "disclaimer": "This only utilises the mangadex api. we do not own any of the content returned by the product",
-        "sourceType": "api",
-        "requiresAuth": false
-      },
-      "changelog": [
-        {
-          "version": "1.0.0",
-          "date": "2025-11-14T07:30:10.235Z",
-          "changes": [
-            "Initial template"
-          ],
-          "breaking": false
-        }
-      ],
-      "statistics": {
-        "downloads": 0,
-        "stars": 0,
-        "rating": 0,
-        "activeUsers": 0
-      },
-      "capabilities": {
-        "supportsSearch": true,
-        "supportsTrending": false,
-        "supportsLatest": false,
-        "supportsFilters": false,
-        "supportsPopular": false,
-        "supportsAuth": false,
-        "supportsDownload": false,
-        "supportsBookmarks": false
-      }
-    }
-  ],
+  "sources": [],
   "categories": {
     "official": [
       "mangadex"
@@ -82,34 +19,12 @@
     ],
     "scraper": [
     ],
-    "multi-language": [
-      "mangadex"
-    ],
-    "english-only": [
-    ],
+    "multi-language": [],
+    "english-only": [],
     "nsfw": [],
-    "sfw": [
-      "mangadex"
-    ]
+    "sfw": []
   },
-  "featured": [
-    "mangadex"
-  ],
+  "featured": [],
   "deprecated": [],
-  "notices": [
-    {
-      "type": "info",
-      "title": "Welcome to JoyBoy Registry",
-      "message": "This is the official source registry for JoyBoy parsers. All sources are cross-platform compatible with Web, Node.js, React Native, and Expo. Sources are dynamically loaded at runtime for maximum flexibility.",
-      "date": "2025-11-13T11:23:56.966Z",
-      "dismissible": true
-    },
-    {
-      "type": "info",
-      "title": "MangaDex Source Available",
-      "message": "The official MangaDex API parser is now available! Features include advanced search, multi-language support, and comprehensive metadata. This source uses the official MangaDex API and respects all rate limits.",
-      "date": "2025-11-14T11:23:56.966Z",
-      "dismissible": true
-    }
-  ]
+  "notices": []
 }

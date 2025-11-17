@@ -3,6 +3,9 @@
 import https from 'https';
 import http from 'http';
 import { createHash } from 'crypto';
+import { readFileSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
 function fetchBuffer(url, timeout = 30000) {
   return new Promise((resolve, reject) => {
@@ -103,10 +106,6 @@ async function fetchAndShaWithNormalization(url, expectedSha) {
   }
   return { ok: false, actual: null, url: null };
 }
-
-import { readFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

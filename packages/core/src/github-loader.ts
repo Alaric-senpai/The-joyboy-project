@@ -5,6 +5,10 @@
 import { RegistrySource } from '@joyboy-parser/source-registry';
 import type { Source } from './base-source';
 import { BaseSource } from './base-source';
+import * as fs from 'node:fs/promises';
+import * as path from 'node:path';
+import * as os from 'node:os';
+import * as crypto from 'node:crypto';
 
 
 /**
@@ -50,10 +54,8 @@ export class GitHubSourceLoader {
 
       onProgress?.(70, 'Loading source...');
 
-      // Validate code structure
-      if (!this.validateSourceCode(code)) {
-        throw new Error('Invalid source code structure');
-      }
+      // Validate code structure (throws on failure)
+      this.validateSourceCode(code);
 
       onProgress?.(80, 'Instantiating source...');
 
@@ -79,9 +81,29 @@ export class GitHubSourceLoader {
   /**
    * Download source code from URL
    */
+  /**
+   * Download source code from URL
+   * Automatically converts GitHub tree URLs to raw URLs
+   */
   private async downloadSourceCode(url: string): Promise<string> {
     try {
-      const response = await fetch(url, {
+      // Auto-fix GitHub tree URLs to raw URLs
+      let downloadUrl = url;
+      if (url.includes('github.com') && url.includes('/tree/')) {
+        // Convert: github.com/user/repo/tree/branch/path -> raw.githubusercontent.com/user/repo/branch/path
+        downloadUrl = url
+          .replace('github.com', 'raw.githubusercontent.com')
+          .replace('/tree/', '/');
+        
+        console.warn(
+          `⚠️  GitHub tree URL detected and auto-converted:\n` +
+          `   From: ${url}\n` +
+          `   To:   ${downloadUrl}\n` +
+          `   Consider updating the registry to use raw URLs or jsDelivr CDN URLs.`
+        );
+      }
+
+      const response = await fetch(downloadUrl, {
         headers: {
           'Accept': 'text/javascript,application/javascript'
         }
@@ -91,9 +113,20 @@ export class GitHubSourceLoader {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      return await response.text();
+      const code = await response.text();
+      
+      // Validate we got JavaScript, not HTML
+      if (code.trim().startsWith('<!DOCTYPE') || code.trim().startsWith('<html')) {
+        throw new Error(
+          'Downloaded content appears to be HTML instead of JavaScript. ' +
+          'The URL may be pointing to a GitHub tree page instead of a raw file. ' +
+          'Use raw.githubusercontent.com or jsDelivr CDN URLs.'
+        );
+      }
+
+      return code;
     } catch (error) {
-      throw new Error(`Download failed: ${(error as Error).message}`);
+      throw new Error(`Download failed from ${url}: ${(error as Error).message}`);
     }
   }
 
@@ -117,68 +150,112 @@ export class GitHubSourceLoader {
 
   /**
    * Validate source code structure
+   * Supports both regular and transpiled/bundled code patterns
+   * @throws Error with detailed message if validation fails
    */
-  private validateSourceCode(code: string): boolean {
-    // Check for required patterns
-    const hasClass = /class\s+\w+\s+extends\s+BaseSource/.test(code);
-    const hasExport = /export\s+default/.test(code) || /module\.exports/.test(code);
+  private validateSourceCode(code: string): void {
+    // Check for required patterns (supports both regular and transpiled/bundled code)
+    // Match: "class X extends BaseSource" OR "var/const/let X = class extends BaseSource"
+    const hasClass = /(class\s+\w+\s+extends\s+BaseSource|(?:var|const|let)\s+\w+\s*=\s*class\s+extends\s+BaseSource)/.test(code);
+    
+    // Match: "export default" OR "export { X as default }" OR "module.exports"
+    const hasExport = /(export\s+default|export\s*\{\s*\w+\s+as\s+default\s*\}|module\.exports)/.test(code);
 
     // Check for dangerous code patterns
-    const hasDangerousCode = [
-      /eval\s*\(/,
-      /new\s+Function\s*\(/,
-      /require\s*\(\s*['"]child_process['"]/,
-      /require\s*\(\s*['"]fs['"]/,
-      /require\s*\(\s*['"]net['"]/,
-      /require\s*\(\s*['"]http['"]/,
-    ].some(pattern => pattern.test(code));
+    const dangerousPatterns = [
+      { pattern: /eval\s*\(/, name: 'eval()' },
+      { pattern: /new\s+Function\s*\(/, name: 'new Function()' },
+      { pattern: /require\s*\(\s*['"]child_process['"]/, name: 'child_process' },
+      { pattern: /require\s*\(\s*['"]fs['"]/, name: 'fs' },
+      { pattern: /require\s*\(\s*['"]net['"]/, name: 'net' },
+      { pattern: /require\s*\(\s*['"]http['"]/, name: 'http' },
+    ];
 
-    return hasClass && hasExport && !hasDangerousCode;
+    const foundDangerous = dangerousPatterns.find(({ pattern }) => pattern.test(code));
+
+    if (!hasClass) {
+      throw new Error(
+        'Invalid source code structure: Missing BaseSource class declaration. ' +
+        'Source must extend BaseSource (supports both "class X extends BaseSource" and "var X = class extends BaseSource" patterns).'
+      );
+    }
+
+    if (!hasExport) {
+      throw new Error(
+        'Invalid source code structure: Missing default export. ' +
+        'Source must have a default export (supports "export default", "export { X as default }", or "module.exports").'
+      );
+    }
+
+    if (foundDangerous) {
+      throw new Error(
+        `Security validation failed: Dangerous pattern detected - ${foundDangerous.name}. ` +
+        'Source code must not use eval, new Function, or Node.js system modules (child_process, fs, net, http).'
+      );
+    }
   }
 
   /**
    * Load source from code string
+   * Creates a temporary file, rewrites imports, and dynamically loads the module
    */
   private async loadSourceFromCode(code: string): Promise<Source> {
+    let tempFilePath: string | null = null;
+    
     try {
-      // Create isolated module environment
-      const moduleWrapper = `
-        (function(exports, require, module, BaseSource) {
-          ${code}
-          return module.exports.default || module.exports || exports.default || exports;
-        })
-      `;
+      // Get the file URL of the current module to resolve relative imports
+      const currentModuleUrl = import.meta.url;
+      const currentModulePath = currentModuleUrl.replace('file://', '');
+      const coreDistPath = path.dirname(currentModulePath);
+      const coreIndexPath = path.join(coreDistPath, 'index.js');
+      
+      // Rewrite imports to use the actual core package location
+      const rewrittenCode = code
+        .replace(/from\s+['"]@joyboy-parser\/core['"]/g, `from 'file://${coreIndexPath}'`)
+        .replace(/from\s+['"]@joyboy-parser\/types['"]/g, `from 'file://${coreIndexPath}'`);
+      
+      // Create a temporary file with the rewritten source code
+      const tempDir = os.tmpdir();
+      const randomName = crypto.randomBytes(16).toString('hex');
+      tempFilePath = path.join(tempDir, `joyboy-source-${randomName}.mjs`);
+      
+      await fs.writeFile(tempFilePath, rewrittenCode, 'utf-8');
 
-      const moduleFactory = new Function('return ' + moduleWrapper)();
+      // Dynamically import the temporary file
+      const module = await import(`file://${tempFilePath}`);
 
-      // Mock module system
-      const module = { exports: {} };
-      const exports = module.exports;
-
-      // Mock require function
-      const require = (name: string) => {
-        if (name === '@joyboy/core') {
-          return { BaseSource };
-        }
-        if (name === '@joyboy/types') {
-          return {};
-        }
-        throw new Error(`Module not found: ${name}`);
-      };
-
-      // Execute module
-      const SourceClass = moduleFactory(exports, require, module, BaseSource);
+      // Get the default export (the Source class)
+      const SourceClass = module.default;
 
       if (!SourceClass) {
-        throw new Error('No source class found in module');
+        throw new Error(
+          'No default export found in source module. ' +
+          'The source must export a class that extends BaseSource as the default export.'
+        );
       }
 
-      // Instantiate source
+      // Instantiate the source
       const source = new SourceClass();
 
       return source;
     } catch (error) {
-      throw new Error(`Failed to load source from code: ${(error as Error).message}`);
+      const err = error as Error;
+      if (err.message.includes('No default export')) {
+        throw err; // Re-throw our custom error as-is
+      }
+      throw new Error(
+        `Failed to load source from code: ${err.message}. ` +
+        'Ensure the source is a valid ES module that extends BaseSource.'
+      );
+    } finally {
+      // Clean up the temporary file
+      if (tempFilePath) {
+        try {
+          await fs.unlink(tempFilePath);
+        } catch {
+          // Ignore cleanup errors
+        }
+      }
     }
   }
 

@@ -19,8 +19,8 @@
       "author": "Alaric-senpai",
       "repository": "https://github.com/Alaric-senpai/The-joyboy-project.git",
       "downloads": {
-        "stable": "https://github.com/Alaric-senpai/The-joyboy-project/tree/main/packages/sources/source-mangadex/dist/index.js",
-        "latest": "https://github.com/Alaric-senpai/The-joyboy-project/tree/main/packages/sources/source-mangadex/dist/index.js",
+        "stable": "https://cdn.jsdelivr.net/gh/Alaric-senpai/The-joyboy-project@main/packages/sources/source-mangadex/dist/index.js",
+        "latest": "https://cdn.jsdelivr.net/gh/Alaric-senpai/The-joyboy-project@main/packages/sources/source-mangadex/dist/index.js",
         "versions": {}
       },
       "integrity": {

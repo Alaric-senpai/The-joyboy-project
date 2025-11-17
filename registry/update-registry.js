@@ -167,24 +167,87 @@ function sha256Hex(buffer) {
   return createHash('sha256').update(buffer).digest('hex');
 }
 
+// Normalize common GitHub UI URLs to raw/CDN equivalents (jsDelivr/raw.githubusercontent)
+function githubToCdnCandidates(urlStr) {
+  try {
+    const u = new URL(urlStr);
+    const host = u.hostname.toLowerCase();
+    const p = u.pathname.replace(/^\/+/, '');
+
+    if (host === 'github.com') {
+      const parts = p.split('/');
+      if (parts.length >= 5 && (parts[2] === 'blob' || parts[2] === 'tree')) {
+        const owner = parts[0];
+        const repo = parts[1];
+        const branch = parts[3];
+        const rest = parts.slice(4).join('/');
+        const jsDelivr = `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/${rest}`;
+        const raw = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${rest}`;
+        return [jsDelivr, raw];
+      }
+      if (parts.length >= 4) {
+        const owner = parts[0];
+        const repo = parts[1];
+        const branch = parts[2];
+        const rest = parts.slice(3).join('/');
+        const jsDelivr = `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/${rest}`;
+        const raw = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${rest}`;
+        return [jsDelivr, raw];
+      }
+    }
+
+    if (host === 'raw.githubusercontent.com') {
+      const parts = p.split('/');
+      if (parts.length >= 4) {
+        const owner = parts[0];
+        const repo = parts[1];
+        const branch = parts[2];
+        const rest = parts.slice(3).join('/');
+        const jsDelivr = `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/${rest}`;
+        return [jsDelivr, urlStr];
+      }
+    }
+
+    return [];
+  } catch (err) {
+    return [];
+  }
+}
+
 // Verify that a download URL's SHA256 matches the expected hash
 async function verifyDownloadSha(downloadUrl, expectedSha) {
   if (!downloadUrl || !expectedSha) return { ok: false, reason: 'missing-params' };
-  try {
-    const buf = await fetchBuffer(downloadUrl);
-    const actual = sha256Hex(buf);
-    const ok = actual.toLowerCase() === expectedSha.toLowerCase();
-    return { ok, expected: expectedSha.toLowerCase(), actual };
-  } catch (err) {
-    return { ok: false, reason: 'fetch-failed', error: err };
+  // Try original URL first, then Github->CDN candidates
+  const candidates = [downloadUrl, ...githubToCdnCandidates(downloadUrl)];
+  for (const u of candidates) {
+    try {
+      const buf = await fetchBuffer(u);
+      const actual = sha256Hex(buf);
+      const ok = actual.toLowerCase() === expectedSha.toLowerCase();
+      if (ok) return { ok: true, expected: expectedSha.toLowerCase(), actual, url: u };
+      // if not ok, continue trying other candidates (maybe content differs)
+      return { ok: false, expected: expectedSha.toLowerCase(), actual, url: u };
+    } catch (err) {
+      // try next candidate
+    }
   }
+  return { ok: false, reason: 'fetch-failed' };
 }
 
 // Check if URL is accessible
 async function checkUrlAvailable(url) {
   try {
-    const response = await fetchUrl(url);
-    return response.statusCode === 200;
+    // Try original and normalized CDN candidates
+    const candidates = [url, ...githubToCdnCandidates(url)];
+    for (const u of candidates) {
+      try {
+        const response = await fetchUrl(u);
+        if (response.statusCode === 200) return true;
+      } catch (err) {
+        // try next candidate
+      }
+    }
+    return false;
   } catch (err) {
     return false;
   }

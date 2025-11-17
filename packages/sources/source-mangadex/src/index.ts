@@ -102,6 +102,9 @@ interface MangaDexPageResponse {
  * MangaDex source parser
  */
 export default class MangaDexSource extends BaseSource {
+  getbyPage(searchLabel: string, pageNumber: number): Promise<Manga[]> {
+    throw new Error('Method not implemented.');
+  }
 
   id = 'mangadex';
   name = 'MangaDex';
@@ -312,7 +315,7 @@ export default class MangaDexSource extends BaseSource {
   /**
    * Get manga by page number for a search term
    */
-  async getbyPage(searchLabel: string, pageNumber: number): Promise<Manga[]> {
+  async getByPage(searchLabel: string, pageNumber: number): Promise<Manga[]> {
     return this.search(searchLabel, { page: pageNumber });
   }
 

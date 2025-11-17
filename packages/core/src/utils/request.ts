@@ -4,6 +4,7 @@
 
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 import type { RequestOptions } from '@joyboy-parser/types';
+import { HttpError, NetworkError } from './http-errors';
 
 /**
  * Request manager with retry logic and timeout handling
@@ -45,21 +46,31 @@ export class RequestManager {
         
 				// Don't retry on 4xx client errors
 				if (axiosError.response?.status && axiosError.response.status >= 400 && axiosError.response.status < 500) {
-					const errorDetails = {
-						statusCode: axiosError.response.status,
-						statusText: axiosError.response.statusText,
-						url: url,
-						method: options?.method || 'GET',
-						responseData: axiosError.response.data
-					};
-					
-					const error = new Error(`HTTP ${axiosError.response.status}: ${axiosError.response.statusText || axiosError.message}`) as any;
-					error.statusCode = errorDetails.statusCode;
-					error.url = errorDetails.url;
-					error.method = errorDetails.method;
-					error.responseData = errorDetails.responseData;
-					
-					throw error;
+					throw new HttpError(
+						axiosError.response.statusText || axiosError.message,
+						axiosError.response.status,
+						url,
+						options?.method || 'GET',
+						axiosError.response.data,
+						axiosError.response.headers as Record<string, string>
+					);
+				}
+				
+				// Check for network/timeout errors
+				if (axiosError.code === 'ECONNABORTED' || axiosError.code === 'ETIMEDOUT') {
+					throw new NetworkError(
+						`Request timeout after ${timeout}ms`,
+						url,
+						true
+					);
+				}
+				
+				if (axiosError.code === 'ENOTFOUND' || axiosError.code === 'ECONNREFUSED') {
+					throw new NetworkError(
+						`Network error: ${axiosError.message}`,
+						url,
+						false
+					);
 				}
         
 				if (attempt < maxRetries - 1) {

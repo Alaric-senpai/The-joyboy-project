@@ -17,6 +17,7 @@ export { SourceRegistry } from './registry';
 export { RequestManager } from './utils/request';
 export { CacheManager } from './utils/cache';
 export { isSourceError, formatError, isRetryableError } from './utils/errors';
+export { HttpError, NetworkError } from './utils/http-errors';
 
 export { GitHubSourceLoader } from './github-loader';
 export type { ProgressCallback } from './github-loader';

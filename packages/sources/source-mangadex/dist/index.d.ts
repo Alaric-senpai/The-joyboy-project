@@ -1,5 +1,5 @@
 import { BaseSource } from '@joyboy-parser/core';
-import { SearchOptions, Manga, Chapter, Page, PaginationBase } from '@joyboy-parser/types';
+import { Manga, SearchOptions, Chapter, Page, PaginationBase } from '@joyboy-parser/types';
 
 /**
  * @joyboy-parser/source-mangadex
@@ -11,6 +11,7 @@ import { SearchOptions, Manga, Chapter, Page, PaginationBase } from '@joyboy-par
  * MangaDex source parser
  */
 declare class MangaDexSource extends BaseSource {
+    getbyPage(searchLabel: string, pageNumber: number): Promise<Manga[]>;
     id: string;
     name: string;
     version: string;
@@ -54,7 +55,7 @@ declare class MangaDexSource extends BaseSource {
     /**
      * Get manga by page number for a search term
      */
-    getbyPage(searchLabel: string, pageNumber: number): Promise<Manga[]>;
+    getByPage(searchLabel: string, pageNumber: number): Promise<Manga[]>;
     /**
      * List all manga with optional filters
      */

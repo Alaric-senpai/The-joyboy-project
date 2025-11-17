@@ -7,9 +7,11 @@
  * Usage: node validate-registry.js
  */
 
-import { readFileSync } from 'fs';
+import { readFileSync, writeFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import https from 'https';
+import { createHash } from 'crypto';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -378,42 +380,219 @@ function validateRegistry(registry) {
   return { errors, warnings };
 }
 
-// Main
-try {
-  info('Starting registry validation...\n');
-
-  const registryPath = join(__dirname, 'sources.json');
-  const content = readFileSync(registryPath, 'utf-8');
-  
-  let registry;
-  try {
-    registry = JSON.parse(content);
-    success('JSON syntax is valid\n');
-  } catch (e) {
-    error(`JSON syntax error: ${e.message}`);
-    process.exit(1);
-  }
-
-  const { errors, warnings } = validateRegistry(registry);
-
-  console.log('\n' + '='.repeat(60));
-  console.log('\nValidation Summary:');
-  console.log(`  Total sources: ${registry.sources?.length || 0}`);
-  console.log(`  Errors: ${errors}`);
-  console.log(`  Warnings: ${warnings}`);
-
-  if (errors === 0 && warnings === 0) {
-    success('\n✨ Registry is valid!');
-    process.exit(0);
-  } else if (errors === 0) {
-    warning(`\n⚠️  Registry is valid but has ${warnings} warning(s)`);
-    process.exit(0);
-  } else {
-    error(`\n❌ Registry validation failed with ${errors} error(s) and ${warnings} warning(s)`);
-    process.exit(1);
-  }
-} catch (e) {
-  error(`Fatal error: ${e.message}`);
-  console.error(e);
-  process.exit(1);
+// Helper: fetch a remote URL into a Buffer using https
+function fetchBuffer(url) {
+  return new Promise((resolve, reject) => {
+    try {
+      const req = https.get(url, { timeout: 30000 }, (res) => {
+        if (res.statusCode && res.statusCode >= 400) {
+          reject(new Error(`HTTP ${res.statusCode} when fetching ${url}`));
+          res.resume();
+          return;
+        }
+        const chunks = [];
+        res.on('data', (c) => chunks.push(c));
+        res.on('end', () => resolve(Buffer.concat(chunks)));
+      });
+      req.on('error', reject);
+      req.on('timeout', () => {
+        req.destroy(new Error('Request timed out'));
+      });
+    } catch (err) {
+      reject(err);
+    }
+  });
 }
+
+// Helper: compute sha256 hex digest of a Buffer
+function sha256Hex(buffer) {
+  return createHash('sha256').update(buffer).digest('hex');
+}
+
+// Verify integrity for a single source by downloading stable URL
+async function verifySourceIntegrity(source) {
+  if (!source?.downloads?.stable) {
+    return { ok: false, reason: 'no-stable-url' };
+  }
+
+  try {
+    const buf = await fetchBuffer(source.downloads.stable);
+    const actual = sha256Hex(buf);
+    const expected = source.integrity?.sha256?.toLowerCase();
+    if (!expected) return { ok: false, reason: 'no-integrity-declared' };
+    const ok = actual === expected;
+    return { ok, expected, actual };
+  } catch (e) {
+    return { ok: false, reason: 'fetch-failed', error: e };
+  }
+}
+
+// Merge remote registry into local registry: verify integrity and replace or add
+async function mergeRemoteRegistry(registry, remoteUrl, { dryRun = false } = {}) {
+  info(`Fetching remote registry: ${remoteUrl}`);
+  let remoteDataRaw;
+  try {
+    const buf = await fetchBuffer(remoteUrl);
+    remoteDataRaw = buf.toString('utf-8');
+  } catch (e) {
+    error(`Failed to fetch remote registry: ${e.message}`);
+    return { added: 0, updated: 0, skipped: 0, errors: 1 };
+  }
+
+  let remote;
+  try {
+    remote = JSON.parse(remoteDataRaw);
+  } catch (e) {
+    error(`Remote registry JSON parse error: ${e.message}`);
+    return { added: 0, updated: 0, skipped: 0, errors: 1 };
+  }
+
+  if (!Array.isArray(remote.sources)) {
+    error('Remote registry missing sources array');
+    return { added: 0, updated: 0, skipped: 0, errors: 1 };
+  }
+
+  const localById = new Map((registry.sources || []).map((s) => [s.id, s]));
+  let added = 0, updated = 0, skipped = 0, errs = 0;
+
+  for (const rsrc of remote.sources) {
+    // basic validation of id and urls
+    if (!rsrc.id || !validateId(rsrc.id)) {
+      warning(`Skipping remote source with invalid id: ${rsrc.id}`);
+      skipped++;
+      continue;
+    }
+
+    // verify integrity before touching local
+    info(`Verifying remote source: ${rsrc.id}`);
+    const result = await verifySourceIntegrity(rsrc);
+    if (!result.ok) {
+      warning(`  Integrity check failed for ${rsrc.id}: ${result.reason || ''} ${result.error ? result.error.message : ''}`);
+      skipped++;
+      continue;
+    }
+
+    const local = localById.get(rsrc.id);
+    if (!local) {
+      info(`  Adding new source: ${rsrc.id}`);
+      if (!dryRun) registry.sources.push(rsrc);
+      added++;
+      continue;
+    }
+
+    // Compare local vs remote. If different, replace local with remote
+    const localStr = JSON.stringify(local);
+    const remoteStr = JSON.stringify(rsrc);
+    if (localStr !== remoteStr) {
+      info(`  Replacing existing source ${rsrc.id} with verified remote version`);
+      if (!dryRun) {
+        const idx = registry.sources.findIndex((s) => s.id === rsrc.id);
+        if (idx > -1) registry.sources[idx] = rsrc;
+      }
+      updated++;
+    } else {
+      info(`  No changes for ${rsrc.id}`);
+    }
+  }
+
+  // Update metadata
+  if (!dryRun) {
+    registry.metadata = registry.metadata || {};
+    registry.metadata.lastUpdated = new Date().toISOString();
+    registry.metadata.totalSources = (registry.sources || []).length;
+  }
+
+  return { added, updated, skipped, errors: errs };
+}
+
+// CLI arg parsing and main async wrapper
+(async () => {
+  try {
+    info('Starting registry validation...\n');
+
+    const registryPath = join(__dirname, 'sources.json');
+    const content = readFileSync(registryPath, 'utf-8');
+    
+    let registry;
+    try {
+      registry = JSON.parse(content);
+      success('JSON syntax is valid\n');
+    } catch (e) {
+      error(`JSON syntax error: ${e.message}`);
+      process.exit(1);
+    }
+
+    const { errors, warnings } = validateRegistry(registry);
+
+    console.log('\n' + '='.repeat(60));
+    console.log('\nValidation Summary:');
+    console.log(`  Total sources: ${registry.sources?.length || 0}`);
+    console.log(`  Errors: ${errors}`);
+    console.log(`  Warnings: ${warnings}`);
+
+    // parse CLI options
+    const args = process.argv.slice(2);
+    const mergeIndex = args.indexOf('--merge');
+    const dryRun = args.includes('--dry-run') || args.includes('-n');
+    const checkIntegrityOnly = args.includes('--check-integrity');
+
+    if (errors === 0 && warnings === 0) {
+      success('\n✨ Registry is valid!');
+    } else if (errors === 0) {
+      warning(`\n⚠️  Registry is valid but has ${warnings} warning(s)`);
+    } else {
+      error(`\n❌ Registry validation failed with ${errors} error(s) and ${warnings} warning(s)`);
+      // continue to allow integrity checks/merge in case user wants to attempt repair
+    }
+
+    // If user requested integrity check for all sources
+    if (checkIntegrityOnly) {
+      info('\nChecking integrity of all sources...');
+      let failed = 0;
+      for (const s of registry.sources || []) {
+        const res = await verifySourceIntegrity(s);
+        if (res.ok) {
+          success(`  ${s.id}: OK`);
+        } else {
+          error(`  ${s.id}: FAILED (${res.reason || (res.actual && res.expected ? `expected ${res.expected}, got ${res.actual}` : 'unknown')})`);
+          failed++;
+        }
+      }
+      if (failed > 0) {
+        error(`\nIntegrity check failed for ${failed} source(s)`);
+        process.exit(2);
+      } else {
+        success('\nAll source integrities verified');
+        process.exit(0);
+      }
+    }
+
+    // If --merge <url> provided, fetch remote registry and merge
+    if (mergeIndex !== -1) {
+      const remoteUrl = args[mergeIndex + 1];
+      if (!remoteUrl) {
+        error('Missing URL for --merge');
+        process.exit(1);
+      }
+      const result = await mergeRemoteRegistry(registry, remoteUrl, { dryRun });
+      info(`\nMerge result: added=${result.added}, updated=${result.updated}, skipped=${result.skipped}, errors=${result.errors}`);
+      if (!dryRun) {
+        writeFileSync(registryPath, JSON.stringify(registry, null, 2) + '\n', 'utf-8');
+        success('Wrote updated registry to disk');
+      } else {
+        warning('Dry run: no changes written');
+      }
+      process.exit(0);
+    }
+
+    // If no special flags, exit according to validation
+    if (errors === 0) {
+      process.exit(0);
+    }
+    process.exit(1);
+  } catch (e) {
+    error(`Fatal error: ${e.message}`);
+    console.error(e);
+    process.exit(1);
+  }
+})();

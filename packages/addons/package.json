@@ -1,8 +1,8 @@
 {
-  "name": "@joyboy-parser/source-mangadex",
-  "version": "1.0.1",
+  "name": "@joyboy-parser/addons",
+  "version": "1.0.0",
   "type": "module",
-  "description": "Official MangaDex API parser",
+  "description": "Extension system and addons for JoyBoy parser ecosystem",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -18,34 +18,43 @@
   ],
   "scripts": {
     "build": "tsup",
-    "build:demo": "tsup src/demo.ts --format esm --target es2022 --no-dts",
     "dev": "tsup --watch",
     "test": "vitest",
-    "clean": "rm -rf dist",
-    "validate-meta": "node scripts/validate-meta.js",
-    "demo": "pnpm build:demo && node dist/demo.js",
-    "gen-hash": "pnpm build && shasum -a 256 dist/index.js"
+    "clean": "rm -rf dist"
   },
   "keywords": [
     "joyboy",
+    "addons",
+    "extensions",
+    "plugins",
     "manga",
-    "mangadex",
     "parser"
   ],
+  "author": "alaric-senpai",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Alaric-senpai/The-joyboy-project.git",
+    "directory": "packages/addons"
+  },
+  "homepage": "https://github.com/Alaric-senpai/The-joyboy-project#readme",
+  "bugs": {
+    "url": "https://github.com/Alaric-senpai/The-joyboy-project/issues"
+  },
   "dependencies": {
     "@joyboy-parser/core": "^1.0.3",
     "@joyboy-parser/types": "^1.0.1"
   },
   "devDependencies": {
-    "tsup": "^8.0.1",
-    "typescript": "^5.3.0",
-    "vitest": "^1.0.0",
-    "ajv": "^8.12.0",
-    "ajv-formats": "^3.0.1"
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^1.6.1"
   },
   "peerDependencies": {
     "@joyboy-parser/core": "^1.0.3",
     "@joyboy-parser/types": "^1.0.1"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

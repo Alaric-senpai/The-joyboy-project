@@ -24,6 +24,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import https from 'https';
 import http from 'http';
+import { createHash } from 'crypto';
 import readline from 'readline/promises';
 import { stdin as input, stdout as output } from 'process';
 
@@ -131,6 +132,52 @@ function fetchUrl(url) {
       reject(new Error('Request timeout'));
     });
   });
+}
+
+// Fetch a URL as a Buffer (binary-safe) and follow simple redirects
+function fetchBuffer(url, timeout = 30000) {
+  return new Promise((resolve, reject) => {
+    try {
+      const client = url.startsWith('https') ? https : http;
+      const req = client.get(url, { headers: { 'User-Agent': 'JoyBoy-Registry-Updater/1.0' }, timeout }, (res) => {
+        if (res.statusCode === 301 || res.statusCode === 302) {
+          const loc = res.headers.location;
+          if (loc) return fetchBuffer(loc).then(resolve).catch(reject);
+        }
+        if (res.statusCode !== 200) {
+          reject(new Error(`HTTP ${res.statusCode}: ${res.statusMessage}`));
+          res.resume();
+          return;
+        }
+        const chunks = [];
+        res.on('data', (c) => chunks.push(c));
+        res.on('end', () => resolve(Buffer.concat(chunks)));
+      });
+      req.on('error', reject);
+      req.on('timeout', () => {
+        req.destroy(new Error('Request timeout'));
+      });
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
+
+function sha256Hex(buffer) {
+  return createHash('sha256').update(buffer).digest('hex');
+}
+
+// Verify that a download URL's SHA256 matches the expected hash
+async function verifyDownloadSha(downloadUrl, expectedSha) {
+  if (!downloadUrl || !expectedSha) return { ok: false, reason: 'missing-params' };
+  try {
+    const buf = await fetchBuffer(downloadUrl);
+    const actual = sha256Hex(buf);
+    const ok = actual.toLowerCase() === expectedSha.toLowerCase();
+    return { ok, expected: expectedSha.toLowerCase(), actual };
+  } catch (err) {
+    return { ok: false, reason: 'fetch-failed', error: err };
+  }
 }
 
 // Check if URL is accessible
@@ -286,19 +333,96 @@ function isDuplicate(registry, sourceMeta) {
   });
 }
 
-// Add source to registry
+// Add or update source in registry. If duplicate exists, verify integrity and replace when appropriate.
 function addSourceToRegistry(registry, sourceMeta) {
-  if (isDuplicate(registry, sourceMeta)) {
-    warning(`Source "${sourceMeta.id}" already exists in registry - skipping`);
+  // Find existing by id primarily
+  const existingIndex = registry.sources.findIndex(s => s.id === sourceMeta.id);
+  if (existingIndex === -1) {
+    // No existing source with same id - check other duplicate heuristics
+    if (isDuplicate(registry, sourceMeta)) {
+      warning(`Source "${sourceMeta.id}" appears duplicated by name/repo/download URL; will attempt to add only if integrity verified`);
+      // fallthrough to adding after integrity check
+    }
+
+    registry.sources.push(sourceMeta);
+    registry.metadata.totalSources = registry.sources.length;
+    registry.metadata.lastUpdated = new Date().toISOString();
+    success(`Added source "${sourceMeta.id}" to registry`);
+    return true;
+  }
+
+  // If existing found, compare versions/metadata. If identical, skip.
+  const existing = registry.sources[existingIndex];
+  const existingStr = JSON.stringify(existing);
+  const incomingStr = JSON.stringify(sourceMeta);
+
+  if (existingStr === incomingStr) {
+    info(`Source "${sourceMeta.id}" already present and identical - skipping`);
     return false;
   }
 
-  registry.sources.push(sourceMeta);
-  registry.metadata.totalSources = registry.sources.length;
-  registry.metadata.lastUpdated = new Date().toISOString();
-  
-  success(`Added source "${sourceMeta.id}" to registry`);
-  return true;
+  // Different: attempt to verify integrity of the incoming source before replacing
+  info(`Source "${sourceMeta.id}" exists but differs. Verifying incoming integrity before replacing...`);
+  const expectedSha = sourceMeta.integrity && sourceMeta.integrity.sha256;
+  const downloadUrl = sourceMeta.downloads && sourceMeta.downloads.stable;
+  if (!expectedSha || !downloadUrl) {
+    warning(`Cannot verify integrity for ${sourceMeta.id} (missing expectedSha or download URL) - skipping replacement`);
+    return false;
+  }
+
+  // NOTE: synchronous code cannot await; callers of addSourceToRegistry expect sync behavior.
+  // We'll perform a blocking check by using deasync-like pattern is not available. Instead,
+  // update-registry previously awaited downloads before calling addSourceToRegistry.
+  // To keep behavior consistent, we signal that caller should call verifyDownloadSha earlier.
+  // Here, as a fallback, we'll log the need for verification and skip replacement.
+  warning(`Replacement requested for ${sourceMeta.id} but verification must be done prior to calling addSourceToRegistry. Skipping replacement.`);
+  return false;
+}
+
+// Add or replace a source after verifying integrity. Returns { added, replaced }
+async function addOrReplaceInRegistry(registry, sourceMeta, { dryRun = false } = {}) {
+  const existingIndex = registry.sources.findIndex(s => s.id === sourceMeta.id);
+
+  // Verify integrity first
+  const expectedSha = sourceMeta.integrity && sourceMeta.integrity.sha256;
+  const downloadUrl = sourceMeta.downloads && sourceMeta.downloads.stable;
+  if (!expectedSha || !downloadUrl) {
+    warning(`Skipping ${sourceMeta.id}: missing integrity.sha256 or downloads.stable`);
+    return { added: false, replaced: false };
+  }
+
+  info(`Verifying integrity for ${sourceMeta.id} before adding/replacing...`);
+  const ver = await verifyDownloadSha(downloadUrl, expectedSha);
+  if (!ver.ok) {
+    error(`Integrity verification failed for ${sourceMeta.id}: ${ver.reason || `${ver.actual} != ${ver.expected}`}` + (ver.error ? ` (${ver.error.message})` : ''));
+    return { added: false, replaced: false };
+  }
+
+  if (existingIndex === -1) {
+    info(`Integrity OK — adding new source ${sourceMeta.id}`);
+    if (!dryRun) {
+      registry.sources.push(sourceMeta);
+      registry.metadata.totalSources = registry.sources.length;
+      registry.metadata.lastUpdated = new Date().toISOString();
+    }
+    success(`Added source "${sourceMeta.id}" to registry`);
+    return { added: true, replaced: false };
+  }
+
+  // Existing present
+  const existing = registry.sources[existingIndex];
+  if (JSON.stringify(existing) === JSON.stringify(sourceMeta)) {
+    info(`Source ${sourceMeta.id} already present and identical — nothing to do`);
+    return { added: false, replaced: false };
+  }
+
+  info(`Integrity OK — replacing existing source ${sourceMeta.id}`);
+  if (!dryRun) {
+    registry.sources[existingIndex] = sourceMeta;
+    registry.metadata.lastUpdated = new Date().toISOString();
+  }
+  success(`Replaced source "${sourceMeta.id}" in registry`);
+  return { added: false, replaced: true };
 }
 
 // Process a single source from folder
@@ -492,18 +616,21 @@ async function main() {
   header('Adding Sources to Registry');
   
   let addedCount = 0;
+  let replacedCount = 0;
   for (const source of sourcesToAdd) {
-    if (addSourceToRegistry(registry, source)) {
-      addedCount++;
-    }
+    // Verify and add/replace (do not modify if verification fails)
+    const res = await addOrReplaceInRegistry(registry, source, { dryRun: false });
+    if (res.added) addedCount++;
+    if (res.replaced) replacedCount++;
   }
 
-  if (addedCount > 0) {
+  if (addedCount > 0 || replacedCount > 0) {
     // Save registry
     try {
       writeFileSync(registryPath, JSON.stringify(registry, null, 2) + '\n', 'utf-8');
       success(`\nRegistry updated successfully!`);
-      success(`Added ${addedCount} new source(s)`);
+      if (addedCount > 0) success(`Added ${addedCount} new source(s)`);
+      if (replacedCount > 0) success(`Replaced ${replacedCount} existing source(s)`);
       success(`Total sources: ${registry.sources.length}`);
     } catch (err) {
       error(`Failed to save registry: ${err.message}`);

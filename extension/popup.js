@@ -494,6 +494,64 @@ function createResultsHTML(data) {
     td { padding: 12px; border-bottom: 1px solid #363645; color: #aeb0b7; }
     tr:hover { background: #2f2f3a; }
     code { background: #18191d; color: #50fa7b; padding: 2px 6px; border-radius: 3px; font-family: monospace; }
+    
+    /* CSS Tabs Styles */
+    .tabs-container {
+        display: flex;
+        flex-direction: column;
+    }
+    .tabs-nav {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #363645;
+        padding-bottom: 10px;
+    }
+    /* Hide radio inputs */
+    input[name="tab-group"] {
+        display: none;
+    }
+    
+    /* Tab Labels (act as buttons) */
+    .tab-label {
+        background: transparent;
+        border: none;
+        color: #aeb0b7;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        border-radius: 6px;
+        transition: all 0.2s;
+        font-weight: 500;
+        user-select: none;
+    }
+    .tab-label:hover {
+        background: #2f2f3a;
+        color: #fff;
+    }
+    
+    /* Active State based on checked radio */
+    #tab-overview:checked ~ .tabs-nav label[for="tab-overview"],
+    #tab-datalog:checked ~ .tabs-nav label[for="tab-datalog"] {
+        background: #6d4aff;
+        color: #fff;
+    }
+    
+    /* Content Visibility */
+    .tab-content {
+        display: none;
+        animation: fadeIn 0.3s ease-in-out;
+    }
+    
+    #tab-overview:checked ~ #content-overview,
+    #tab-datalog:checked ~ #content-datalog {
+        display: block;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(5px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
   </style>
 </head>
 <body>
@@ -506,89 +564,156 @@ function createResultsHTML(data) {
       <p><strong>Analyzed:</strong> ${new Date(data.metadata.timestamp).toLocaleString()}</p>
     </div>
 
-    <div class="stats">
-      <div class="stat">
-        <div class="number">${data.metadata.totalElements}</div>
-        <div class="label">Total Elements</div>
-      </div>
-      <div class="stat">
-        <div class="number">${data.metadata.uniqueClasses}</div>
-        <div class="label">Unique Classes</div>
-      </div>
-      <div class="stat">
-        <div class="number">${data.metadata.uniqueTags}</div>
-        <div class="label">Unique Tags</div>
-      </div>
-    </div>
+    <!-- CSS Tabs Structure -->
+    <div class="tabs-container">
+        <!-- Radio Inputs -->
+        <input type="radio" name="tab-group" id="tab-overview" checked>
+        <input type="radio" name="tab-group" id="tab-datalog">
 
-    <h2>Top Classes by Frequency</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Class Name</th>
-          <th>Usage Count</th>
-          <th>Tags Used On</th>
-          <th>Classification</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${data.frequency.slice(0, 20).map(cls => {
+        <!-- Navigation (Labels) -->
+        <div class="tabs-nav">
+            <label for="tab-overview" class="tab-label">Overview</label>
+            <label for="tab-datalog" class="tab-label">Data Log</label>
+        </div>
+
+        <!-- OVERVIEW TAB CONTENT -->
+        <div id="content-overview" class="tab-content">
+            <div class="stats">
+            <div class="stat">
+                <div class="number">${data.metadata.totalElements}</div>
+                <div class="label">Total Elements</div>
+            </div>
+            <div class="stat">
+                <div class="number">${data.metadata.uniqueClasses}</div>
+                <div class="label">Unique Classes</div>
+            </div>
+            <div class="stat">
+                <div class="number">${data.metadata.uniqueTags}</div>
+                <div class="label">Unique Tags</div>
+            </div>
+            </div>
+
+            <h2>Top Classes by Frequency</h2>
+            <table>
+            <thead>
+                <tr>
+                <th>Class Name</th>
+                <th>Usage Count</th>
+                <th>Tags Used On</th>
+                <th>Classification</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${data.frequency.slice(0, 20).map(cls => {
         const classData = data.classes[cls.name];
         const tags = Object.keys(classData.tags).slice(0, 5).map(t => `<span class="tag">${t}</span>`).join(' ');
         return `
-            <tr>
-              <td><code class="class-name">${cls.name}</code></td>
-              <td>${cls.count}</td>
-              <td>${tags}</td>
-              <td>${classData.classification || 'custom'}</td>
-            </tr>
-          `;
+                    <tr>
+                    <td><code class="class-name">${cls.name}</code></td>
+                    <td>${cls.count}</td>
+                    <td>${tags}</td>
+                    <td>${classData.classification || 'custom'}</td>
+                    </tr>
+                `;
     }).join('')}
-      </tbody>
-    </table>
+            </tbody>
+            </table>
 
-    <h2>Top HTML Tags</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Tag Name</th>
-          <th>Count</th>
-          <th>Percentage</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${data.tagFrequency.slice(0, 20).map(tag => {
+            <h2>Top HTML Tags</h2>
+            <table>
+            <thead>
+                <tr>
+                <th>Tag Name</th>
+                <th>Count</th>
+                <th>Percentage</th>
+            </tr>
+            </thead>
+            <tbody>
+                ${data.tagFrequency.slice(0, 20).map(tag => {
         const percentage = ((tag.count / data.metadata.totalElements) * 100).toFixed(1);
         return `
-            <tr>
-              <td><code>&lt;${tag.name}&gt;</code></td>
-              <td>${tag.count}</td>
-              <td>${percentage}%</td>
-            </tr>
-          `;
+                    <tr>
+                    <td><code>&lt;${tag.name}&gt;</code></td>
+                    <td>${tag.count}</td>
+                    <td>${percentage}%</td>
+                    </tr>
+                `;
     }).join('')}
-      </tbody>
-    </table>
+            </tbody>
+            </table>
 
-    <h2>Common Class Combinations</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Classes</th>
-          <th>Frequency</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${data.patterns.map(pattern => `
-          <tr>
-            <td>${pattern.classes.map(c => `<code>${c}</code>`).join(' + ')}</td>
-            <td>${pattern.frequency}</td>
-          </tr>
-        `).join('')}
-      </tbody>
-    </table>
+            <h2>Common Class Combinations</h2>
+            <table>
+            <thead>
+                <tr>
+                <th>Classes</th>
+                <th>Frequency</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${data.patterns.map(pattern => `
+                <tr>
+                    <td>${pattern.classes.map(c => `<code>${c}</code>`).join(' + ')}</td>
+                    <td>${pattern.frequency}</td>
+                </tr>
+                `).join('')}
+            </tbody>
+            </table>
+        </div>
+
+        <!-- DATA LOG TAB CONTENT -->
+        <div id="content-datalog" class="tab-content">
+            <h2>All Classes (Sorted by Frequency)</h2>
+            <table>
+            <thead>
+                <tr>
+                <th>Class Name</th>
+                <th>Usage Count</th>
+                <th>Tags Used On</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${data.frequency.map(cls => {
+        const classData = data.classes[cls.name];
+        // Show more tags in detail view
+        const tags = Object.keys(classData.tags).map(t => `<span class="tag">${t}</span>`).join(' ');
+        return `
+                    <tr>
+                    <td><code class="class-name">${cls.name}</code></td>
+                    <td>${cls.count}</td>
+                    <td>${tags}</td>
+                    </tr>
+                `;
+    }).join('')}
+            </tbody>
+            </table>
+
+            <h2>All HTML Tags</h2>
+            <table>
+            <thead>
+                <tr>
+                <th>Tag Name</th>
+                <th>Count</th>
+                <th>Percentage</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${data.tagFrequency.map(tag => {
+        const percentage = ((tag.count / data.metadata.totalElements) * 100).toFixed(1);
+        return `
+                    <tr>
+                    <td><code>&lt;${tag.name}&gt;</code></td>
+                    <td>${tag.count}</td>
+                    <td>${percentage}%</td>
+                    </tr>
+                `;
+    }).join('')}
+            </tbody>
+            </table>
+        </div>
+    </div> <!-- End tabs-container -->
+
   </div>
 </body>
-</html>
-  `;
+</html>  `;
 }

@@ -256,28 +256,6 @@ var MangaDexSource = class extends BaseSource {
   }
 };
 
-// src/demo.ts
-async function run() {
-  const source = new MangaDexSource();
-  console.log("Source id:", source.id);
-  try {
-    const results = await source.search("Kanojyo to Himitsu to Koimoyou");
-    console.log(`Total results`, results.length);
-    console.log("Displaying first element");
-    console.dir(results[0]);
-    const selected = results[0];
-    const chapters = await source.getChapters(selected.id);
-    console.log("Total chapters found", chapters.length);
-    console.dir(chapters);
-    const selectedchapter = chapters[0];
-    const pages = await source.getChapterPages(selectedchapter.id);
-    console.log("Total pages found", pages.length);
-    console.dir(pages);
-  } catch (err) {
-    const error = err;
-    console.error("Demo search failed (this is expected until you implement methods):", error.message || error);
-  }
-}
-run().catch(console.error);
-//# sourceMappingURL=demo.js.map
-//# sourceMappingURL=demo.js.map
+export { MangaDexSource as default };
+//# sourceMappingURL=index.js.map
+//# sourceMappingURL=index.js.map

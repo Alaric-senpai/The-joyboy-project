@@ -5,7 +5,7 @@
  */
 
 import { BaseSource } from '@joyboy-parser/core';
-import type { Manga, Chapter, Page, SearchOptions, PaginationBase } from '@joyboy-parser/types';
+import type { Manga, Chapter, Page, SearchOptions, PaginationBase, Genre } from '@joyboy-parser/types';
 
 // MangaDex API response types
 interface MangaDexManga {
@@ -357,6 +357,14 @@ export default class MangaDexSource extends BaseSource {
       // Return default pagination if extraction fails
       return { totalPages: 1 };
     }
+  }
+
+  // listGenres(){
+
+  // }
+
+  listGenres(): Promise<Genre[]> {
+    throw new Error("not implemented")
   }
 
   /**

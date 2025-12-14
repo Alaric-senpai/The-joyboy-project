@@ -30,11 +30,11 @@ importers:
   packages/addons:
     dependencies:
       '@joyboy-parser/core':
-        specifier: ^1.0.3
-        version: 1.0.3(@joyboy-parser/source-registry@1.0.1(@joyboy-parser/types@1.0.1))(@joyboy-parser/types@1.0.1)
+        specifier: workspace:*
+        version: link:../core
       '@joyboy-parser/types':
-        specifier: ^1.0.1
-        version: 1.0.1
+        specifier: workspace:*
+        version: link:../types
     devDependencies:
       tsup:
         specifier: ^8.5.1
@@ -49,11 +49,11 @@ importers:
   packages/core:
     dependencies:
       '@joyboy-parser/source-registry':
-        specifier: ^1.0.1
-        version: 1.0.1(@joyboy-parser/types@1.0.1)
+        specifier: workspace:*
+        version: link:../source-registry
       '@joyboy-parser/types':
-        specifier: ^1.0.1
-        version: 1.0.1
+        specifier: workspace:*
+        version: link:../types
       axios:
         specifier: ^1.13.2
         version: 1.13.2
@@ -74,8 +74,8 @@ importers:
   packages/source-registry:
     dependencies:
       '@joyboy-parser/types':
-        specifier: ^1.0.1
-        version: 1.0.1
+        specifier: workspace:*
+        version: link:../types
     devDependencies:
       tsup:
         specifier: ^8.0.1
@@ -99,11 +99,11 @@ importers:
   packages/sources/source-mangadex:
     dependencies:
       '@joyboy-parser/core':
-        specifier: ^1.0.3
-        version: 1.0.3(@joyboy-parser/source-registry@1.0.1(@joyboy-parser/types@1.0.1))(@joyboy-parser/types@1.0.1)
+        specifier: workspace:*
+        version: link:../../core
       '@joyboy-parser/types':
-        specifier: ^1.0.1
-        version: 1.0.1
+        specifier: workspace:*
+        version: link:../../types
     devDependencies:
       ajv:
         specifier: ^8.12.0
@@ -657,20 +657,6 @@ packages:
   '@jest/schemas@29.6.3':
     resolution: {integrity: sha512-mo5j5X+jIZmJQveBKeS/clAueipV7KgiX1vMgCxam1RNYiqE1w62n0/tJJnHtjW8ZHcQco5gY85jA3mi0L+nSA==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
-
-  '@joyboy-parser/core@1.0.3':
-    resolution: {integrity: sha512-VbDxSa85CnG/QvlLtlFzeAkSNhwNgV0dcty9sbiTC7znF8ZyDurE4fHa+Bjm9EW8g02cM89EWGGDd6NPjJSBLQ==}
-    peerDependencies:
-      '@joyboy-parser/source-registry': 1.0.1
-      '@joyboy-parser/types': ^1.0.1
-
-  '@joyboy-parser/source-registry@1.0.1':
-    resolution: {integrity: sha512-bSisqDe/QBWtA7PeOawibBoA3+taEJqc2/jhGPv3wmLVqrCnR/Tb/O4FSdaM3WHFWFVw8f2htM3AakE+PwRPTQ==}
-    peerDependencies:
-      '@joyboy-parser/types': ^1.0.0
-
-  '@joyboy-parser/types@1.0.1':
-    resolution: {integrity: sha512-eBOIrAxDfrbH/foRH6ZvCc8J2IYW10ZL0yhmfQfRTV6qk2zh0oNr8zjljsxDgpJ1YnY2YoHj6bsgQnjAm+JRwg==}
 
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
@@ -2392,22 +2378,6 @@ snapshots:
   '@jest/schemas@29.6.3':
     dependencies:
       '@sinclair/typebox': 0.27.8
-
-  '@joyboy-parser/core@1.0.3(@joyboy-parser/source-registry@1.0.1(@joyboy-parser/types@1.0.1))(@joyboy-parser/types@1.0.1)':
-    dependencies:
-      '@joyboy-parser/source-registry': 1.0.1(@joyboy-parser/types@1.0.1)
-      '@joyboy-parser/types': 1.0.1
-      axios: 1.13.2
-      linkedom: 0.18.12
-    transitivePeerDependencies:
-      - canvas
-      - debug
-
-  '@joyboy-parser/source-registry@1.0.1(@joyboy-parser/types@1.0.1)':
-    dependencies:
-      '@joyboy-parser/types': 1.0.1
-
-  '@joyboy-parser/types@1.0.1': {}
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:

@@ -11,7 +11,8 @@ import type {
 	SearchOptions,
 	RequestOptions,
 	SourceError,
-	PaginationBase
+	PaginationBase,
+	Genre
 } from '@joyboy-parser/types';
 import { createSourceError, ErrorType } from '@joyboy-parser/types';
 import { RequestManager } from './utils/request';
@@ -37,6 +38,11 @@ export interface Source extends SourceInfo, SourceCapabilities {
 	 */
 	getChapters(mangaId: string): Promise<Chapter[]>;
   
+
+	/**
+	 * List all genres
+	 */
+	listGenres():Promise<Genre[]>
 
 	/**
 	 * Get manga by page
@@ -91,10 +97,10 @@ export abstract class BaseSource implements Source {
 	description?: string;
   
 	supportsSearch = true;
-	supportsTrending = false;
-	supportsLatest = false;
-	supportsFilters = false;
-	supportsPopular = false;
+	supportsTrending = true;
+	supportsLatest = true;
+	supportsFilters = true;
+	supportsPopular = true;
 
 	protected requestManager: RequestManager;
 	protected cacheManager?: CacheManager;
@@ -261,6 +267,8 @@ export abstract class BaseSource implements Source {
 	abstract getMangaDetails(id: string): Promise<Manga>;
 	abstract getChapters(mangaId: string): Promise<Chapter[]>;
 	abstract getChapterPages(chapterId: string): Promise<Page[]>;
+
+	abstract listGenres():Promise<Genre[]>
 
 	abstract extractPaginationInfo(url: string): Promise<PaginationBase>;
 }

@@ -82,9 +82,9 @@ async function create() {
 	writeFileSync(join(projectDir, 'src/index.ts'), template);
 
 	// Create package.json
- 	const packageJson = {
- 		name: packageName,
- 		version: '1.0.0',
+	const packageJson = {
+		name: packageName,
+		version: '1.0.0',
 		type: 'module',
 		description: response.description || `${response.name} parser for JoyBoy`,
 		main: './dist/index.js',
@@ -106,13 +106,14 @@ async function create() {
 			clean: 'rm -rf dist',
 			'validate-meta': 'node scripts/validate-meta.js',
 			'demo': 'pnpm build:demo && node dist/demo.js',
-			'gen-hash': 'pnpm build && shasum -a 256 dist/index.js'
+			'gen-hash': 'pnpm build && shasum -a 256 dist/index.js',
+			'gen-integrity': 'node scripts/gen-integrity.js'
 		},
 		keywords: ['joyboy', 'manga', sourceId, 'parser'],
 		license: 'MIT',
 		dependencies: {
-			'@joyboy-parser/core': '^1.1.4',
-			'@joyboy-parser/types': '^1.1.1'
+			'@joyboy-parser/core': '^1.1.5',
+			'@joyboy-parser/types': '^1.1.2'
 		},
 		devDependencies: {
 			tsup: '^8.0.1',
@@ -122,8 +123,8 @@ async function create() {
 			'ajv-formats': '^3.0.1'
 		},
 		peerDependencies: {
-			'@joyboy-parser/core': '^1.1.4',
-			'@joyboy-parser/types': '^1.1.1'
+			'@joyboy-parser/core': '^1.1.5',
+			'@joyboy-parser/types': '^1.1.2'
 		}
 	};
 
@@ -225,7 +226,7 @@ Additionally, this template generates a \`source-meta.json\` file containing reg
 MIT
 `;
 
-writeFileSync(join(projectDir, 'README.md'), readme);
+	writeFileSync(join(projectDir, 'README.md'), readme);
 
 	// Create a demo file (src/demo.ts) to help developers try the parser locally
 	const demoTs = `import ${className} from './index';
@@ -297,7 +298,7 @@ run().catch(console.error);
 		}
 	};
 
-writeFileSync(join(projectDir, 'source-meta.json'), JSON.stringify(sourceMeta, null, 2));
+	writeFileSync(join(projectDir, 'source-meta.json'), JSON.stringify(sourceMeta, null, 2));
 
 	// Create a simple metadata validator script at scripts/validate-meta.js
 	const validateScript = `#!/usr/bin/env node
@@ -446,8 +447,37 @@ if (!meta.repository) {
 console.log('\\u2705 source-meta.json is valid!');
 `;
 
-mkdirSync(join(projectDir, 'scripts'), { recursive: true });
-writeFileSync(join(projectDir, 'scripts/validate-meta.js'), validateScript);
+	// Create integrity generation script
+	const integrityScript = `#!/usr/bin/env node
+import fs from 'fs';
+import { join } from 'path';
+import { createHash } from 'crypto';
+
+const distFile = join(process.cwd(), 'dist/index.js');
+const integrityFile = join(process.cwd(), 'integrity.json');
+
+if (!fs.existsSync(distFile)) {
+  console.error('❌ dist/index.js not found. Run build first.');
+  process.exit(1);
+}
+
+const buffer = fs.readFileSync(distFile);
+const hash = createHash('sha256').update(buffer).digest('hex');
+
+const content = {
+  integrity: {
+    sha256: hash
+  }
+};
+
+fs.writeFileSync(integrityFile, JSON.stringify(content, null, 2));
+console.log('✅ Integrity file generated at integrity.json');
+console.log('   SHA256:', hash);
+`;
+
+	mkdirSync(join(projectDir, 'scripts'), { recursive: true });
+	writeFileSync(join(projectDir, 'scripts/validate-meta.js'), validateScript);
+	writeFileSync(join(projectDir, 'scripts/gen-integrity.js'), integrityScript);
 
 	// Create LICENSE and CONTRIBUTING.md
 	const license = `MIT License
@@ -470,9 +500,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 `;
 
-writeFileSync(join(projectDir, 'LICENSE'), license);
+	writeFileSync(join(projectDir, 'LICENSE'), license);
 
-const contributing = `# Contributing
+	const contributing = `# Contributing
 
 Thank you for contributing! Please follow these steps:
 
@@ -483,7 +513,7 @@ Thank you for contributing! Please follow these steps:
 5. Validate metadata: \`pnpm run validate-meta\`.
 `;
 
-writeFileSync(join(projectDir, 'CONTRIBUTING.md'), contributing);
+	writeFileSync(join(projectDir, 'CONTRIBUTING.md'), contributing);
 
 	console.log(chalk.green('\n✓ Source created successfully!\n'));
 	console.log(chalk.cyan('Next steps:'));

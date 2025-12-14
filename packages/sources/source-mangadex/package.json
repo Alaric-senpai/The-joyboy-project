@@ -34,8 +34,8 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@joyboy-parser/core": "^1.0.3",
-    "@joyboy-parser/types": "^1.0.1"
+    "@joyboy-parser/core": "workspace:*",
+    "@joyboy-parser/types": "workspace:*"
   },
   "devDependencies": {
     "tsup": "^8.0.1",
@@ -45,7 +45,7 @@
     "ajv-formats": "^3.0.1"
   },
   "peerDependencies": {
-    "@joyboy-parser/core": "^1.0.3",
-    "@joyboy-parser/types": "^1.0.1"
+    "@joyboy-parser/core": "workspace:*",
+    "@joyboy-parser/types": "workspace:*"
   }
 }

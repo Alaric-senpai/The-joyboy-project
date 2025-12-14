@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>joyboy-extractor</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>joyboy-extractor</h1>
+            <p class="subtitle">DOM Analysis & Class Extraction</p>
+        </header>
+
+        <nav class="tabs">
+            <button class="tab-btn active" data-tab="analyze">Analyze</button>
+            <button class="tab-btn" data-tab="history">History</button>
+            <button class="tab-btn" data-tab="settings">Settings</button>
+        </nav>
+
+        <!-- ANALYZE TAB -->
+        <section id="analyze-tab" class="tab-content active">
+            <div class="card">
+                <h2>Analyze Current Page</h2>
+                <p class="description">Extract and analyze CSS classes, HTML structure, and component patterns.</p>
+
+                <div class="button-group">
+                    <button id="analyzeBtn" class="btn btn-primary">
+                        <span class="icon">📊</span> Analyze DOM
+                    </button>
+                    <button id="analyzeWithAIBtn" class="btn btn-secondary">
+                        <span class="icon">✨</span> Analyze with AI
+                    </button>
+                </div>
+
+                <div id="loading" class="loading hidden">
+                    <div class="spinner"></div>
+                    <p>Analyzing page structure...</p>
+                </div>
+
+                <div id="results" class="results hidden">
+                    <div class="result-summary">
+                        <div class="stat">
+                            <span class="label">Total Elements</span>
+                            <span id="stat-elements" class="value">0</span>
+                        </div>
+                        <div class="stat">
+                            <span class="label">Unique Classes</span>
+                            <span id="stat-classes" class="value">0</span>
+                        </div>
+                        <div class="stat">
+                            <span class="label">Unique Tags</span>
+                            <span id="stat-tags" class="value">0</span>
+                        </div>
+                    </div>
+
+                    <div class="result-actions">
+                        <button id="viewDetailsBtn" class="btn btn-small">View Full Analysis</button>
+                        <button id="exportBtn" class="btn btn-small">Export JSON</button>
+                        <button id="newAnalysisBtn" class="btn btn-small">New Analysis</button>
+                    </div>
+
+                    <div id="aiResults" class="ai-results hidden">
+                        <h3>AI Analysis</h3>
+                        <div id="aiContent" class="ai-content"></div>
+                    </div>
+                </div>
+
+                <div id="error" class="error hidden"></div>
+            </div>
+        </section>
+
+        <!-- HISTORY TAB -->
+        <section id="history-tab" class="tab-content">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <h2 style="margin-bottom: 0;">Analysis History</h2>
+                    <button id="clearHistoryBtn" class="btn btn-small" style="padding: 6px 12px; margin: 0;">Clear All</button>
+                </div>
+                <div id="history-list" class="history-list">
+                    <p class="empty-state">No analyses yet. Run an analysis to get started.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SETTINGS TAB -->
+        <section id="settings-tab" class="tab-content">
+            <div class="card">
+                <h2>Settings</h2>
+
+                <div class="setting-group">
+                    <label for="apiKeyInput">Moonshot AI API Key</label>
+                    <input type="password" id="apiKeyInput" placeholder="sk-..." class="input">
+                    <small>Required for AI-enhanced analysis</small>
+                </div>
+
+                <div class="setting-group">
+                    <label for="enableAI">
+                        <input type="checkbox" id="enableAI">
+                        Enable AI Analysis
+                    </label>
+                    <small>Requires valid API key</small>
+                </div>
+
+                <div class="setting-group">
+                    <label for="themeSelect">Theme</label>
+                    <select id="themeSelect" class="input">
+                        <option value="light">Light</option>
+                        <option value="dark">Dark</option>
+                    </select>
+                </div>
+
+                <button id="saveSettingsBtn" class="btn btn-primary">Save Settings</button>
+                <div id="settingsMessage" class="message hidden"></div>
+            </div>
+        </section>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+
+</html>

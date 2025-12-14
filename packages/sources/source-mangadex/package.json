@@ -1,6 +1,6 @@
 {
   "name": "@joyboy-parser/source-mangadex",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "type": "module",
   "description": "Official MangaDex API parser",
   "main": "./dist/index.js",

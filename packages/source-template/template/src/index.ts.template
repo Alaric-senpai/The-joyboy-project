@@ -6,7 +6,7 @@
  */
 
 import { BaseSource } from '@joyboy-parser/core';
-import type { Manga, Chapter, Page, SearchOptions, PaginationBase } from '@joyboy-parser/types';
+import type { Manga, Chapter, Page, SearchOptions, PaginationBase, Genre } from '@joyboy-parser/types';
 
 /**
  * Template source implementation. Replace the TODO blocks with real parsing logic.
@@ -67,6 +67,8 @@ export default class {{SOURCE_CLASS_NAME}} extends BaseSource {
 		// Return totalPages at minimum. Implementers can extend with richer pagination if needed.
 		return { totalPages: 1 };
 	}
+
+	async ListGenres
 
 	// --- Utility examples ---------------------------------------------------------
 	// You can use the protected helpers from BaseSource in implementations:

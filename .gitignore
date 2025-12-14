@@ -5,5 +5,8 @@ paste*
 # Ignore dist folders globally
 dist
 
+
+.env
+
 # BUT allow dist folders in packages/sources/ directory (needed for publishing)
 !packages/sources/**/dist

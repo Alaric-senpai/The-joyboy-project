@@ -18,6 +18,8 @@ import { createSourceError, ErrorType } from '@joyboy-parser/types';
 import { RequestManager } from './utils/request';
 import { CacheManager } from './utils/cache';
 import { parseHTML } from 'linkedom';
+import { SitemapUrl } from './utils/sitemap.types';
+import sitemapParser, { parseXml, smartParseXml } from './utils/xml';
 
 /**
  * Core interface that all source parsers must implement
@@ -27,22 +29,22 @@ export interface Source extends SourceInfo, SourceCapabilities {
 	 * Search for manga by query
 	 */
 	search(query: string, options?: SearchOptions): Promise<Manga[]>;
-  
+
 	/**
 	 * Get detailed information about a specific manga
 	 */
 	getMangaDetails(id: string): Promise<Manga>;
-  
+
 	/**
 	 * Get all chapters for a manga
 	 */
 	getChapters(mangaId: string): Promise<Chapter[]>;
-  
+
 
 	/**
 	 * List all genres
 	 */
-	listGenres():Promise<Genre[]>
+	listGenres(): Promise<Genre[]>
 
 	/**
 	 * Get manga by page
@@ -58,17 +60,17 @@ export interface Source extends SourceInfo, SourceCapabilities {
 	 * Get all pages for a specific chapter
 	 */
 	getChapterPages(chapterId: string): Promise<Page[]>;
-  
+
 	/**
 	 * Get trending manga (optional)
 	 */
 	getTrending?(options?: SearchOptions): Promise<Manga[]>;
-  
+
 	/**
 	 * Get latest updates (optional)
 	 */
 	getLatest?(options?: SearchOptions): Promise<Manga[]>;
-  
+
 	/**
 	 * Get popular manga (optional)
 	 */
@@ -77,7 +79,10 @@ export interface Source extends SourceInfo, SourceCapabilities {
 	/**Extract pagineation data
 	 * @param url the url to extract pagination
 	 */
-	extractPaginationInfo(url:string):Promise<PaginationBase>;
+	extractPaginationInfo(url: string): Promise<PaginationBase>;
+
+
+	parseSitemap(url: string): Promise<Record<string, any> | null>;
 
 }
 
@@ -90,12 +95,12 @@ export abstract class BaseSource implements Source {
 	abstract name: string;
 	abstract version: string;
 	abstract baseUrl: string;
-  
+
 	languages?: string[];
 	isNsfw?: boolean;
 	icon?: string;
 	description?: string;
-  
+
 	supportsSearch = true;
 	supportsTrending = true;
 	supportsLatest = true;
@@ -132,24 +137,24 @@ export abstract class BaseSource implements Source {
 
 		try {
 			const result = await this.requestManager.request<T>(url, options);
-			
+
 			// Cache successful responses
 			if (options?.cache && this.cacheManager) {
 				const cacheKey = this.getCacheKey(url, options);
 				this.cacheManager.set(cacheKey, result, options.cacheTTL);
 			}
-			
+
 			return result;
 		} catch (error) {
 			const err = error as any;
 			const context: Record<string, any> = {};
-			
+
 			// Extract HTTP error details
 			if (err.statusCode) context.statusCode = err.statusCode;
 			if (err.url) context.url = err.url;
 			if (err.method) context.method = err.method;
 			if (err.responseData) context.responseData = err.responseData;
-			
+
 			throw this.createError(
 				'NETWORK',
 				`Request failed: ${(error as Error).message}`,
@@ -167,7 +172,7 @@ export abstract class BaseSource implements Source {
 		const params = options?.params ? JSON.stringify(options.params) : '';
 		return `${method}:${url}:${params}`;
 	}
-  
+
 	/**
 	 * Fetch HTML content and return as text
 	 */
@@ -184,7 +189,43 @@ export abstract class BaseSource implements Source {
 			);
 		}
 	}
-  
+
+
+
+
+	async parseSitemap(url: string = `${this.baseUrl}/sitemap.xml`): Promise<Record<string, any> | null> {
+		try {
+			const xmlData = await this.request(url, {
+				headers: {
+					"accepts": "application/xml"
+				}
+			});
+
+			// Use advanced XML parser for better handling
+			const parsed = parseXml(xmlData);
+			
+			// Handle both urlset and sitemapindex formats
+			if (parsed.urlset) {
+				const urls = Array.isArray(parsed.urlset.url) 
+					? parsed.urlset.url 
+					: parsed.urlset.url ? [parsed.urlset.url] : [];
+				return { urls };
+			} else if (parsed.sitemapindex) {
+				const sitemaps = Array.isArray(parsed.sitemapindex.sitemap)
+					? parsed.sitemapindex.sitemap
+					: parsed.sitemapindex.sitemap ? [parsed.sitemapindex.sitemap] : [];
+				return { urls: sitemaps };
+			}
+			
+			// Return empty urls array for unrecognized format
+			return { urls: parsed };
+		} catch (error) {
+			console.error(`Failed to parse sitemap at ${url}`, error);
+			return null;
+		}
+	}
+
+
 	/**
 	 * Create a standardized error
 	 */
@@ -202,20 +243,20 @@ export abstract class BaseSource implements Source {
 			context
 		);
 	}
-  
+
 	/**
 	 * Utility: Delay execution
 	 */
 	protected delay(ms: number): Promise<void> {
 		return new Promise(resolve => setTimeout(resolve, ms));
 	}
-  
+
 	/**
 	 * Utility: Build URL with query parameters
 	 */
 	protected buildUrl(path: string, params?: Record<string, any>): string {
 		const url = new URL(path, this.baseUrl);
-    
+
 		if (params) {
 			Object.entries(params).forEach(([key, value]) => {
 				if (value !== undefined && value !== null) {
@@ -233,7 +274,7 @@ export abstract class BaseSource implements Source {
 				}
 			});
 		}
-    
+
 		return url.toString();
 	}
 
@@ -247,7 +288,7 @@ export abstract class BaseSource implements Source {
 	protected transformToHtml(html: string) {
 		return parseHTML(html);
 	}
-  
+
 	/**
 	 * Abstract methods that must be implemented
 	 */
@@ -262,13 +303,13 @@ export abstract class BaseSource implements Source {
 
 	abstract listAll(options?: SearchOptions): Promise<Manga[]>;
 
-    abstract search(query: string, options?: SearchOptions): Promise<Manga[]>;
+	abstract search(query: string, options?: SearchOptions): Promise<Manga[]>;
 
 	abstract getMangaDetails(id: string): Promise<Manga>;
 	abstract getChapters(mangaId: string): Promise<Chapter[]>;
 	abstract getChapterPages(chapterId: string): Promise<Page[]>;
 
-	abstract listGenres():Promise<Genre[]>
+	abstract listGenres(): Promise<Genre[]>
 
 	abstract extractPaginationInfo(url: string): Promise<PaginationBase>;
 }

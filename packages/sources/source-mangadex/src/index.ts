@@ -228,6 +228,11 @@ export default class MangaDexSource extends BaseSource {
     }));
   }
 
+
+  async sitema(){
+    return this.parseSitemap()
+  }
+
   /**
    * Get latest manga updates
    */

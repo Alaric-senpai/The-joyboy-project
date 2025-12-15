@@ -68,6 +68,7 @@ class DOMAnalyzer {
   /**
    * Extract data from a single element
    */
+
   extractElementData(element) {
     const classList = Array.from(element.classList);
     const parentTag = element.parentElement ? element.parentElement.tagName.toLowerCase() : null;
@@ -83,47 +84,37 @@ class DOMAnalyzer {
       hasText: element.innerText && element.innerText.trim().length > 0,
       id: element.id || null,
       ariaRole: element.getAttribute('role') || null,
-      accessibilityAttributes: this.extractAccessibilityAttrs(element)
+      accessibilityAttributes: this.extractAccessibilityAttrs(element),
+      _node: element // Temp reference for sampling
     };
 
     return data;
   }
 
   /**
-   * Extract element attributes
+   * Extract all attributes from an element
    */
   extractAttributes(element) {
     const attrs = {};
-
-    const important = ['class', 'id', 'name', 'href', 'src', 'role', 'aria-label', 'aria-hidden', 'data-testid', 'style'];
-    
-    important.forEach(attr => {
-      const val = element.getAttribute(attr);
-      if (val) attrs[attr] = val;
-    });
-
-    // Get all data-* attributes
-    for (let attr of element.attributes) {
-      if (attr.name.startsWith('data-')) {
+    if (element.hasAttributes()) {
+      for (const attr of element.attributes) {
         attrs[attr.name] = attr.value;
       }
     }
-
     return attrs;
   }
 
   /**
-   * Extract accessibility-related attributes
+   * Extract accessibility specific attributes
    */
   extractAccessibilityAttrs(element) {
     const attrs = {};
-    for (let attr of element.attributes) {
-      if (attr.name.startsWith('aria-')) {
-        attrs[attr.name] = attr.value;
+    if (element.hasAttributes()) {
+      for (const attr of element.attributes) {
+        if (attr.name.startsWith('aria-') || attr.name === 'role' || attr.name === 'tabindex') {
+          attrs[attr.name] = attr.value;
+        }
       }
-    }
-    if (element.hasAttribute('role')) {
-      attrs.role = element.getAttribute('role');
     }
     return attrs;
   }
@@ -171,13 +162,46 @@ class DOMAnalyzer {
   }
 
   /**
+   * Extract page styles (link tags and style tags)
+   */
+  extractPageStyles() {
+    const styles = [];
+
+    // Extract linked stylesheets
+    document.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
+      if (link.href) {
+        styles.push({ type: 'link', content: link.href });
+      }
+    });
+
+    // Extract inline styles
+    document.querySelectorAll('style').forEach(style => {
+      if (style.textContent) {
+        styles.push({ type: 'style', content: style.textContent });
+      }
+    });
+
+    return styles;
+  }
+
+  /**
    * Group elements by class
    */
   groupByClass() {
     Object.keys(this.classes).forEach(className => {
       const classData = this.classes[className];
       classData.classification = this.classifyClass(className, classData);
-      classData.samples = classData.elements.slice(0, 3);
+
+      // Capture samples with HTML (Max 1 as requested)
+      classData.samples = classData.elements.slice(0, 1).map(el => {
+        // Create a clean copy for the sample without the circular _node
+        const sample = { ...el };
+        if (el._node) {
+          sample.html = el._node.outerHTML;
+          delete sample._node; // Remove node ref from sample
+        }
+        return sample;
+      });
     });
   }
 
@@ -293,6 +317,11 @@ class DOMAnalyzer {
    * Generate final report
    */
   generateReport() {
+    // Cleanup _node references from main element list to prevent serialization errors
+    this.elements.forEach(el => {
+      delete el._node;
+    });
+
     return {
       metadata: {
         timestamp: new Date().toISOString(),
@@ -302,6 +331,7 @@ class DOMAnalyzer {
         uniqueClasses: Object.keys(this.classes).length,
         uniqueTags: Object.keys(this.tagFrequency).length
       },
+      styles: this.extractPageStyles(), // Include styles in report
       classes: this.classes,
       elements: this.elements,
       frequency: this.results.classFrequencyRanked,

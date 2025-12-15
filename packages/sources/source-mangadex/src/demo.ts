@@ -35,6 +35,13 @@ async function run() {
     console.dir(pages)
 
 
+    console.log("sitemap")
+
+    const sitemap = await source.parseSitemap("https://sflix.ps/sitemap.xml")
+
+    console.dir(sitemap)
+
+
     // console.log('Search results (sample):', results.slice(0, 3));
   } catch (err) {
     const error = err as Error;

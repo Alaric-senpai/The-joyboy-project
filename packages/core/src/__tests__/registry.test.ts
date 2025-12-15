@@ -33,13 +33,15 @@ const createMockSource = (id: string, overrides: Partial<Source> = {}): Source =
   }),
   getChapters: async () => [],
   getChapterPages: async () => [],
-  getbyPage: async () => [],
+  getByPage: async () => [],
+  listGenres: async () => [],
   extractPaginationInfo: async () => ({
     currentPage: 1,
     totalPages: 1,
     hasNextPage: false,
     hasPreviousPage: false
   }),
+  parseSitemap: async () => null,
   ...overrides
 });
 

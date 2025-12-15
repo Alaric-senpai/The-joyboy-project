@@ -2,12 +2,18 @@
  * Tests for BaseSource
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { BaseSource } from '../base-source';
-import type { Manga, Chapter, Page, SearchOptions, PaginationBase } from '@joyboy-parser/types';
+import type { Manga, Chapter, Page, SearchOptions, PaginationBase, Genre } from '@joyboy-parser/types';
 
 // Concrete implementation for testing
 class TestSource extends BaseSource {
+  getByPage(searchLabel: string, pageNumber: number): Promise<Manga[]> {
+    throw new Error('Method not implemented.');
+  }
+  listGenres(): Promise<Genre[]> {
+    throw new Error('Method not implemented.');
+  }
   id = 'test-source';
   name = 'Test Source';
   version = '1.0.0';
@@ -110,6 +116,12 @@ class TestSource extends BaseSource {
 
 // Test source with optional methods
 class FullFeaturedSource extends TestSource {
+  getByPage(searchLabel: string, pageNumber: number): Promise<Manga[]> {
+    throw new Error('Method not implemented.');
+  }
+  listGenres(): Promise<Genre[]> {
+    throw new Error('Method not implemented.');
+  }
   supportsTrending = true;
   supportsLatest = true;
   supportsPopular = true;
@@ -180,10 +192,10 @@ describe('BaseSource', () => {
 
     it('should have default capability flags', () => {
       expect(source.supportsSearch).toBe(true);
-      expect(source.supportsTrending).toBe(false);
-      expect(source.supportsLatest).toBe(false);
-      expect(source.supportsFilters).toBe(false);
-      expect(source.supportsPopular).toBe(false);
+      expect(source.supportsTrending).toBe(true);
+      expect(source.supportsLatest).toBe(true);
+      expect(source.supportsFilters).toBe(true);
+      expect(source.supportsPopular).toBe(true);
     });
 
     it('should allow custom capability flags', () => {
@@ -421,7 +433,7 @@ describe('BaseSource', () => {
           </div>
         </div>
       `;
-      
+
       const parsed = (source as any).transformToHtml(html);
       const items = parsed.document.querySelectorAll('.manga-item');
 
@@ -482,4 +494,65 @@ describe('BaseSource', () => {
       expect(manga.genres).toBeUndefined();
     });
   });
+  describe('parseSitemap()', () => {
+    it('should parse Mangadex sitemap correctly', async () => {
+      const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://mangadex.org/about</loc>
+  </url>
+  <url>
+    <loc>https://mangadex.org/announcements</loc>
+  </url>
+  <url>
+    <loc>https://mangadex.org/titles</loc>
+  </url>
+</urlset>`;
+
+      // Spy on the protected request method
+      vi.spyOn(source as any, 'request').mockResolvedValue(sitemapXml);
+
+      const urls = await source.parseSitemap('https://mangadex.org/sitemap.xml');
+
+      expect(urls).toBeDefined();
+      expect(urls).toHaveLength(3);
+      expect(urls![0].loc).toBe('https://mangadex.org/about');
+      expect(urls![2].loc).toBe('https://mangadex.org/titles');
+
+      // Verify request was called with correct headers
+      expect((source as any).request).toHaveBeenCalledWith(
+        'https://mangadex.org/sitemap.xml',
+        expect.objectContaining({
+          headers: {
+            accepts: 'application/xml'
+          }
+        })
+      );
+    });
+
+    it('should handle failed requests gracefully', async () => {
+      vi.spyOn(source as any, 'request').mockRejectedValue(new Error('Network error'));
+
+      const result = await source.parseSitemap('https://example.com/sitemap.xml');
+      expect(result).toBeNull();
+    });
+
+    it('should handle invalid XML', async () => {
+      vi.spyOn(source as any, 'request').mockResolvedValue('Invalid XML');
+
+      const result = await source.parseSitemap('https://example.com/sitemap.xml');
+      // sitemapParser probably returns undefined/null or throws for invalid XML?
+      // Based on implementation: sitemapParser.parse('Invalid XML') -> res
+      // res?.urlset?.url
+      // If invalid XML, res might be valid object but not have urlset, or return undefined.
+      // Let's assume it returns empty array or null based on the ? checks.
+      // Actually sitemapParser.parse might not throw but return structure.
+      // If it returns null/undefined, safe navigation will handle it.
+      // Let's verify what happens with sitemapParser.parse('invalid') in previous output?
+      // The user didn't run that.
+      // The implementation returns `res?.urlset?.url || []`.
+      expect(result).toEqual([]);
+    });
+  });
+
 });

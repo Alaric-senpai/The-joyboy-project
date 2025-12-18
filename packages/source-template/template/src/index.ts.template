@@ -20,7 +20,8 @@ export default class {{SOURCE_CLASS_NAME}} extends BaseSource {
 	baseUrl = '{{BASE_URL}}'; // TODO: Replace with actual base url
 	icon = ''; // Optional
 	description = '{{SOURCE_NAME}} parser for JoyBoy';
-	languages= ['en']
+	languages = ['en'];
+	isNsfw = false; // Optional
 
 	// Capabilities
 	supportsSearch = true;
@@ -53,7 +54,7 @@ export default class {{SOURCE_CLASS_NAME}} extends BaseSource {
 		throw this.createError('PARSE', 'GetChapterPages not implemented');
 	}
 
-	async getbyPage(searchLabel: string, pageNumber: number): Promise<Manga[]> {
+	async getByPage(searchLabel: string, pageNumber: number): Promise<Manga[]> {
 		// Optional pagination search helper
 		return this.search(searchLabel);
 	}
@@ -63,12 +64,15 @@ export default class {{SOURCE_CLASS_NAME}} extends BaseSource {
 		return this.search('', options);
 	}
 
-	async extractPaginationInfo(htmlOrUrl: string): Promise<PaginationBase> {
+	async listGenres(): Promise<Genre[]> {
+		// TODO: implement genre listing
+		return [];
+	}
+
+	async extractPaginationInfo(url: string): Promise<PaginationBase> {
 		// Return totalPages at minimum. Implementers can extend with richer pagination if needed.
 		return { totalPages: 1 };
 	}
-
-	async ListGenres
 
 	// --- Utility examples ---------------------------------------------------------
 	// You can use the protected helpers from BaseSource in implementations:

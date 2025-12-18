@@ -65,6 +65,7 @@ async function create() {
 
 	// Create project structure
 	mkdirSync(join(projectDir, 'src'), { recursive: true });
+	mkdirSync(join(projectDir, 'src/_tests_'), { recursive: true });
 
 	// Copy template
 	const templateDir = join(__dirname, '../template');
@@ -80,6 +81,20 @@ async function create() {
 
 	// Write source file
 	writeFileSync(join(projectDir, 'src/index.ts'), template);
+
+	// Create test file
+	const testTemplateFile = join(templateDir, 'src/_tests_/index.test.ts.template');
+	let testTemplate = readFileSync(testTemplateFile, 'utf-8');
+
+	// Replace placeholders in test template
+	testTemplate = testTemplate
+		.replace(/{{SOURCE_NAME}}/g, response.name)
+		.replace(/{{SOURCE_ID}}/g, sourceId)
+		.replace(/{{SOURCE_CLASS_NAME}}/g, className)
+		.replace(/{{BASE_URL}}/g, response.baseUrl);
+
+	// Write test file
+	writeFileSync(join(projectDir, 'src/_tests_/index.test.ts'), testTemplate);
 
 	// Create package.json
 	const packageJson = {

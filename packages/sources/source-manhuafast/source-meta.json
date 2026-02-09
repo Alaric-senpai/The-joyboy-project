@@ -8,10 +8,10 @@
   "author": "Alaric-senpai",
   "repository": "https://github.com/Alaric-senpai/The-joyboy-project.git",
   "downloads": {
-    "stable": "https://cdn.jsdelivr.net/gh/Alaric-senpai/The-joyboy-project@main/packages/sources/source-mangadex/dist/index.js",
-    "latest": "https://cdn.jsdelivr.net/gh/Alaric-senpai/The-joyboy-project@main/packages/sources/source-mangadex/dist/index.js",
+    "stable": "https://cdn.jsdelivr.net/gh/Alaric-senpai/The-joyboy-project@main/packages/sources/source-manhuafast/dist/index.js",
+    "latest": "https://cdn.jsdelivr.net/gh/Alaric-senpai/The-joyboy-project@main/packages/sources/source-manhuafast/dist/index.js",
     "versions": {
-      "1.0.0": "https://cdn.jsdelivr.net/gh/Alaric-senpai/The-joyboy-project@main/packages/sources/source-mangadex/dist/index.js"
+      "1.0.0": "https://cdn.jsdelivr.net/gh/Alaric-senpai/The-joyboy-project@main/packages/sources/source-manhuafast/dist/index.js"
     }
   },
   "integrity": {

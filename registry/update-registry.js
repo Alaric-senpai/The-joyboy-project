@@ -11,10 +11,12 @@
  * 3. Validate source metadata
  * 4. Check downloads (stable/latest) availability
  * 5. Prevent duplicates
+ * 6. Auto-calculate integrity hash from download URL (--auto-hash flag)
  * 
  * Usage:
  *   node update-registry.js                    # Scan local sources
  *   node update-registry.js --url <meta-url>   # Add from external URL
+ *   node update-registry.js --auto-hash        # Auto-calculate hash from download URL
  */
 
 import { readFileSync, writeFileSync, readdirSync, statSync, existsSync } from 'fs';
@@ -212,6 +214,21 @@ function githubToCdnCandidates(urlStr) {
   } catch (err) {
     return [];
   }
+}
+
+// Fetch and compute SHA256 hash from a download URL
+async function computeHashFromUrl(downloadUrl) {
+  const candidates = [downloadUrl, ...githubToCdnCandidates(downloadUrl)];
+  for (const u of candidates) {
+    try {
+      const buf = await fetchBuffer(u);
+      const hash = sha256Hex(buf);
+      return { ok: true, hash, url: u };
+    } catch (err) {
+      // try next candidate
+    }
+  }
+  return { ok: false, reason: 'fetch-failed' };
 }
 
 // Verify that a download URL's SHA256 matches the expected hash
@@ -442,24 +459,56 @@ function addSourceToRegistry(registry, sourceMeta) {
   return false;
 }
 
-// Add or replace a source after verifying integrity. Returns { added, replaced }
-async function addOrReplaceInRegistry(registry, sourceMeta, { dryRun = false } = {}) {
+// Add or replace a source after verifying integrity. Returns { added, replaced, hashUpdated }
+async function addOrReplaceInRegistry(registry, sourceMeta, { dryRun = false, autoHash = false } = {}) {
   const existingIndex = registry.sources.findIndex(s => s.id === sourceMeta.id);
 
   // Verify integrity first
-  const expectedSha = sourceMeta.integrity && sourceMeta.integrity.sha256;
+  let expectedSha = sourceMeta.integrity && sourceMeta.integrity.sha256;
   const downloadUrl = sourceMeta.downloads && sourceMeta.downloads.stable;
-  if (!expectedSha || !downloadUrl) {
-    warning(`Skipping ${sourceMeta.id}: missing integrity.sha256 or downloads.stable`);
-    return { added: false, replaced: false };
+  if (!downloadUrl) {
+    warning(`Skipping ${sourceMeta.id}: missing downloads.stable`);
+    return { added: false, replaced: false, hashUpdated: false };
+  }
+
+  // If autoHash is enabled, compute the hash from the download URL
+  if (autoHash) {
+    info(`Auto-calculating hash for ${sourceMeta.id} from download URL...`);
+    const hashResult = await computeHashFromUrl(downloadUrl);
+    if (!hashResult.ok) {
+      error(`Failed to compute hash for ${sourceMeta.id}: ${hashResult.reason}`);
+      return { added: false, replaced: false, hashUpdated: false };
+    }
+    
+    const newHash = hashResult.hash;
+    if (expectedSha && expectedSha.toLowerCase() !== newHash.toLowerCase()) {
+      warning(`Hash mismatch for ${sourceMeta.id}: expected ${expectedSha}, got ${newHash}`);
+      warning(`Auto-updating hash to: ${newHash}`);
+    }
+    
+    // Update the source meta with the computed hash
+    sourceMeta.integrity = sourceMeta.integrity || {};
+    sourceMeta.integrity.sha256 = newHash;
+    expectedSha = newHash;
+    success(`Hash computed: ${newHash}`);
+  }
+
+  if (!expectedSha) {
+    warning(`Skipping ${sourceMeta.id}: missing integrity.sha256 (use --auto-hash to compute automatically)`);
+    return { added: false, replaced: false, hashUpdated: false };
   }
 
   info(`Verifying integrity for ${sourceMeta.id} before adding/replacing...`);
   const ver = await verifyDownloadSha(downloadUrl, expectedSha);
   if (!ver.ok) {
     error(`Integrity verification failed for ${sourceMeta.id}: ${ver.reason || `${ver.actual} != ${ver.expected}`}` + (ver.error ? ` (${ver.error.message})` : ''));
-    return { added: false, replaced: false };
+    if (!autoHash) {
+      info(`Tip: Use --auto-hash to automatically compute the correct hash from the download URL`);
+    }
+    return { added: false, replaced: false, hashUpdated: false };
   }
+
+  const hashWasUpdated = autoHash;
 
   if (existingIndex === -1) {
     info(`Integrity OK — adding new source ${sourceMeta.id}`);
@@ -469,14 +518,14 @@ async function addOrReplaceInRegistry(registry, sourceMeta, { dryRun = false } =
       registry.metadata.lastUpdated = new Date().toISOString();
     }
     success(`Added source "${sourceMeta.id}" to registry`);
-    return { added: true, replaced: false };
+    return { added: true, replaced: false, hashUpdated: hashWasUpdated };
   }
 
   // Existing present
   const existing = registry.sources[existingIndex];
   if (JSON.stringify(existing) === JSON.stringify(sourceMeta)) {
     info(`Source ${sourceMeta.id} already present and identical — nothing to do`);
-    return { added: false, replaced: false };
+    return { added: false, replaced: false, hashUpdated: false };
   }
 
   info(`Integrity OK — replacing existing source ${sourceMeta.id}`);
@@ -485,7 +534,7 @@ async function addOrReplaceInRegistry(registry, sourceMeta, { dryRun = false } =
     registry.metadata.lastUpdated = new Date().toISOString();
   }
   success(`Replaced source "${sourceMeta.id}" in registry`);
-  return { added: false, replaced: true };
+  return { added: false, replaced: true, hashUpdated: hashWasUpdated };
 }
 
 // Process a single source from folder
@@ -623,6 +672,12 @@ async function main() {
   const args = process.argv.slice(2);
   const registryPath = join(__dirname, 'sources.json');
 
+  // Parse CLI flags
+  const autoHash = args.includes('--auto-hash');
+  if (autoHash) {
+    info('Auto-hash mode enabled: will compute integrity hash from download URL');
+  }
+
   // Load registry
   let registry;
   try {
@@ -680,11 +735,13 @@ async function main() {
   
   let addedCount = 0;
   let replacedCount = 0;
+  let hashUpdatedCount = 0;
   for (const source of sourcesToAdd) {
     // Verify and add/replace (do not modify if verification fails)
-    const res = await addOrReplaceInRegistry(registry, source, { dryRun: false });
+    const res = await addOrReplaceInRegistry(registry, source, { dryRun: false, autoHash });
     if (res.added) addedCount++;
     if (res.replaced) replacedCount++;
+    if (res.hashUpdated) hashUpdatedCount++;
   }
 
   if (addedCount > 0 || replacedCount > 0) {
@@ -694,6 +751,7 @@ async function main() {
       success(`\nRegistry updated successfully!`);
       if (addedCount > 0) success(`Added ${addedCount} new source(s)`);
       if (replacedCount > 0) success(`Replaced ${replacedCount} existing source(s)`);
+      if (hashUpdatedCount > 0) success(`Updated ${hashUpdatedCount} hash(es) via auto-hash`);
       success(`Total sources: ${registry.sources.length}`);
     } catch (err) {
       error(`Failed to save registry: ${err.message}`);

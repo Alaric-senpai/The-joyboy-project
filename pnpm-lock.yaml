@@ -124,11 +124,8 @@ importers:
         specifier: ^1.0.0
         version: 1.6.1(@types/node@20.19.25)
 
-  packages/sources/source-mangafire:
+  packages/sources/source-manhuafast:
     dependencies:
-      '@joyboy-parser/addons':
-        specifier: ^1.0.0
-        version: 1.0.0(@joyboy-parser/core@1.1.7(@joyboy-parser/source-registry@1.1.7(@joyboy-parser/types@1.1.5))(@joyboy-parser/types@1.1.5))(@joyboy-parser/types@1.1.5)
       '@joyboy-parser/core':
         specifier: ^1.1.7
         version: 1.1.7(@joyboy-parser/source-registry@1.1.7(@joyboy-parser/types@1.1.5))(@joyboy-parser/types@1.1.5)
@@ -688,12 +685,6 @@ packages:
   '@jest/schemas@29.6.3':
     resolution: {integrity: sha512-mo5j5X+jIZmJQveBKeS/clAueipV7KgiX1vMgCxam1RNYiqE1w62n0/tJJnHtjW8ZHcQco5gY85jA3mi0L+nSA==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
-
-  '@joyboy-parser/addons@1.0.0':
-    resolution: {integrity: sha512-h8rE9Tm6HPjWV4Sh1KQLhIvNQeXdm5fs3YIheLCB1wYagha7H6m3GN/hMZvERNH+ArRJIfsrK7daiz4PKUYBRg==}
-    peerDependencies:
-      '@joyboy-parser/core': workspace:*
-      '@joyboy-parser/types': workspace:*
 
   '@joyboy-parser/core@1.1.7':
     resolution: {integrity: sha512-Xn8kvuPyhVa6/30yRMys4FxPM1aBzvpq3CWhCWMDEKT2AcfVSBzdcO2HTT/czLsrqIaqUD/jK/i1/XoPd/sMpQ==}
@@ -2436,11 +2427,6 @@ snapshots:
   '@jest/schemas@29.6.3':
     dependencies:
       '@sinclair/typebox': 0.27.8
-
-  '@joyboy-parser/addons@1.0.0(@joyboy-parser/core@1.1.7(@joyboy-parser/source-registry@1.1.7(@joyboy-parser/types@1.1.5))(@joyboy-parser/types@1.1.5))(@joyboy-parser/types@1.1.5)':
-    dependencies:
-      '@joyboy-parser/core': 1.1.7(@joyboy-parser/source-registry@1.1.7(@joyboy-parser/types@1.1.5))(@joyboy-parser/types@1.1.5)
-      '@joyboy-parser/types': 1.1.5
 
   '@joyboy-parser/core@1.1.7(@joyboy-parser/source-registry@1.1.7(@joyboy-parser/types@1.1.5))(@joyboy-parser/types@1.1.5)':
     dependencies:

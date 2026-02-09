@@ -1,8 +1,8 @@
 {
-  "name": "@joyboy-parser/source-mangafire",
+  "name": "@joyboy-parser/source-manhuafast",
   "version": "1.0.0",
   "type": "module",
-  "description": "Mangafire source for joyboy",
+  "description": "Manhuafast source parser",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -25,26 +25,25 @@
     "validate-meta": "node scripts/validate-meta.js",
     "demo": "pnpm build:demo && node dist/demo.js",
     "gen-hash": "pnpm build && shasum -a 256 dist/index.js",
-    "gen-integrity": "node scripts/gen-integrity.js"
+    "gen-integrity": " pnpm build && node scripts/gen-integrity.js"
   },
   "keywords": [
     "joyboy",
     "manga",
-    "mangafire",
+    "manhuafast",
     "parser"
   ],
   "license": "MIT",
   "dependencies": {
-    "@joyboy-parser/addons": "^1.0.0",
     "@joyboy-parser/core": "^1.1.7",
     "@joyboy-parser/types": "^1.1.5"
   },
   "devDependencies": {
-    "ajv": "^8.12.0",
-    "ajv-formats": "^3.0.1",
     "tsup": "^8.0.1",
     "typescript": "^5.3.0",
-    "vitest": "^1.0.0"
+    "vitest": "^1.0.0",
+    "ajv": "^8.12.0",
+    "ajv-formats": "^3.0.1"
   },
   "peerDependencies": {
     "@joyboy-parser/core": "^1.1.7",

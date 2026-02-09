@@ -1,18 +1,18 @@
-# @joyboy-parser/source-mangafire
+# @joyboy-parser/source-manhuafast
 
-Mangafire source for joyboy
+Manhuafast source parser
 
 ## Installation
 
 ```bash
-npm install @joyboy-parser/source-mangafire
+npm install @joyboy-parser/source-manhuafast
 ```
 
 ## Usage
 
 ```typescript
 
-const source = new @joyboy-parser/source-mangafire();
+const source = new @joyboy-parser/source-manhuafast();
 
 const results = await source.search('query');
 const manga = await source.getMangaDetails(results[0].id);

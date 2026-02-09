@@ -40,7 +40,7 @@ declare class MangaDexSource extends BaseSource {
      * Get pages for a chapter
      */
     getChapterPages(chapterId: string): Promise<Page[]>;
-    sitema(): Promise<void>;
+    sitema(): Promise<Record<string, any> | null>;
     /**
      * Get latest manga updates
      */

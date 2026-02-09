@@ -1,6 +1,6 @@
 {
   "name": "@joyboy-parser/source-registry",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "type": "module",
   "description": "Dynamic source registry and catalog for JoyBoy parsers",
   "author": "JoyBoy Contributors",
@@ -28,6 +28,8 @@
     "dev": "tsup --watch",
     "clean": "rm -rf dist",
     "update-registry": "node scripts/update-registry.js",
+    "gen-integrity": "node scripts/gen-integrity.js",
+    "batch-integrity": "node scripts/batch-gen-integrity.js",
     "test": "vitest",
     "test:remote": "node test-remote-registry.js"
   },

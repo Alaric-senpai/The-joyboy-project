@@ -1,0 +1,69 @@
+{
+  "id": "manhuafast",
+  "name": "manhuafast",
+  "version": "1.0.0",
+  "baseUrl": "https://manhuafast.net",
+  "description": "Manhuafast source parser",
+  "icon": "",
+  "author": "Alaric-senpai",
+  "repository": "https://github.com/Alaric-senpai/The-joyboy-project.git",
+  "downloads": {
+    "stable": "https://cdn.jsdelivr.net/gh/Alaric-senpai/The-joyboy-project@main/packages/sources/source-manhuafast/dist/index.js",
+    "latest": "https://cdn.jsdelivr.net/gh/Alaric-senpai/The-joyboy-project@main/packages/sources/source-manhuafast/dist/index.js",
+    "versions": {
+      "1.0.0": "https://cdn.jsdelivr.net/gh/Alaric-senpai/The-joyboy-project@main/packages/sources/source-manhuafast/dist/index.js"
+    }
+  },
+  "integrity": {
+    "sha256": "b3e840021f82a755013bf7600dbbc46d5c6360ccf9c56a5ccb59729cc14d87a7"
+  },
+  "metadata": {
+    "languages": [
+      "en"
+    ],
+    "official": false,
+    "nsfw": false,
+    "tags": [
+      "Manhuafast",
+      "scrapper",
+      "unoffifcial"
+    ],
+    "lastUpdated": "2026-02-09T16:21:45.710Z",
+    "minCoreVersion": "1.0.0",
+    "maxCoreVersion": "2.0.0",
+    "websiteUrl": "https://manhuafast.net",
+    "supportUrl": "https://github.com/Alaric-senpai/The-joyboy-project.git/issues"
+  },
+  "legal": {
+    "disclaimer": "We do not take responsibility for whatever you do with this code. Joyboy app does not and will never take ownership of any content or information obtained via this code",
+    "sourceType": "scraper",
+    "requiresAuth": false
+  },
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-02-09T16:21:45.710Z",
+      "changes": [
+        "Initial template",
+        "Created base support for manga access from all points"
+      ],
+      "breaking": false
+    }
+  ],
+  "statistics": {
+    "downloads": 0,
+    "stars": 0,
+    "rating": 0,
+    "activeUsers": 0
+  },
+  "capabilities": {
+    "supportsSearch": true,
+    "supportsTrending": true,
+    "supportsLatest": true,
+    "supportsFilters": true,
+    "supportsPopular": true,
+    "supportsAuth": true,
+    "supportsDownload": true,
+    "supportsBookmarks": false
+  }
+}

@@ -101,6 +101,7 @@ var MangaDexSource = class extends BaseSource {
     }));
   }
   async sitema() {
+    return this.parseSitemap();
   }
   /**
    * Get latest manga updates

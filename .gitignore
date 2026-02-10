@@ -8,5 +8,7 @@ dist
 
 .env
 
+.npmrc
+
 # BUT allow dist folders in packages/sources/ directory (needed for publishing)
 !packages/sources/**/dist

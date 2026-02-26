@@ -1,5 +1,6 @@
 /**
- * Enhanced JoyBoy runtime with source registry integration
+ * JoyBoy Runtime v1.2.0 - Remote-only, no caching
+ * Always fetches fresh registry data to ensure up-to-date integrity hashes
  */
 
 import { SourceRegistry } from './registry';
@@ -8,24 +9,19 @@ import type { Source } from './base-source';
 import type { Manga } from '@joyboy-parser/types';
 import type { ProgressCallback } from './github-loader';
 
-// Import from source-registry
 import {
   type RegistrySource,
-  SourceCatalog,
-  getAllSources,
-  getSourceById,
-  searchSources as searchRegistry,
   RemoteRegistry,
-  DEFAULT_REGISTRY_URLS
+  REGISTRY_URLS,
 } from '@joyboy-parser/source-registry';
 
 /**
- * Main JoyBoy runtime class with integrated source registry
+ * Main JoyBoy runtime class - Remote-first architecture
+ * Always fetches fresh data from GitHub to ensure integrity verification works
  */
 export class JoyBoy {
   private static registry = SourceRegistry.getInstance();
   private static loader = new GitHubSourceLoader();
-  private static remoteCatalog: SourceCatalog | null = null;
   private static remoteRegistry: RemoteRegistry | null = null;
 
   // ============================================================================
@@ -33,113 +29,92 @@ export class JoyBoy {
   // ============================================================================
 
   /**
-   * Configure remote registry
+   * Configure remote registry URL
    * 
-   * @param registryUrl - URL to registry JSON (defaults to jsDelivr CDN)
+   * @param primaryUrl - Primary URL (defaults to GitHub raw)
+   * @param fallbackUrl - Fallback URL (defaults to jsDelivr)
    * 
    * @example
    * ```typescript
-   * JoyBoy.configureRegistry(
-   *   'https://cdn.jsdelivr.net/gh/user/repo@main/registry/sources.json'
-   * );
+   * JoyBoy.configureRegistry('https://raw.githubusercontent.com/user/repo/main/registry/sources.json');
    * ```
    */
-  static configureRegistry(registryUrl?: string): void {
-    const url = registryUrl || DEFAULT_REGISTRY_URLS.jsdelivr;
-    this.remoteCatalog = new SourceCatalog(url);
-    this.remoteRegistry = new RemoteRegistry({ registryUrl: url });
+  static configureRegistry(primaryUrl?: string, fallbackUrl?: string): void {
+    this.remoteRegistry = new RemoteRegistry({
+      primaryUrl: primaryUrl || REGISTRY_URLS.github,
+      fallbackUrl: fallbackUrl || REGISTRY_URLS.jsdelivr,
+    });
   }
 
-  // ============================================================================
-  // REGISTRY OPERATIONS
-  // ============================================================================
-
   /**
-   * Sync with remote registry
-   * 
-   * @returns Promise that resolves when sync is complete
-   * 
-   * @example
-   * ```typescript
-   * await JoyBoy.syncRegistry();
-   * const sources = JoyBoy.browseSources();
-   * ```
+   * Get or create remote registry instance
    */
-  static async syncRegistry(): Promise<void> {
-    if (!this.remoteCatalog) {
+  private static getRemoteRegistry(): RemoteRegistry {
+    if (!this.remoteRegistry) {
       this.configureRegistry();
     }
-    await this.remoteCatalog!.syncWithRemote();
+    return this.remoteRegistry!;
   }
 
+  // ============================================================================
+  // REGISTRY OPERATIONS (All async - always fetch fresh)
+  // ============================================================================
+
   /**
-   * Browse all available sources in the registry
+   * Browse all available sources (always fetches fresh from remote)
    * 
-   * @returns Array of all source registry entries
+   * @returns Promise of all source registry entries
    * 
    * @example
    * ```typescript
-   * const sources = JoyBoy.browseSources();
-   * sources.forEach(s => console.log(s.name));
+   * const sources = await JoyBoy.browseSources();
+   * sources.forEach(s => console.log(s.name, s.integrity));
    * ```
    */
-  static browseSources(): RegistrySource[] {
-    if (this.remoteCatalog) {
-      return this.remoteCatalog.getAllSources();
-    }
-    return getAllSources();
+  static async browseSources(): Promise<RegistrySource[]> {
+    return this.getRemoteRegistry().getSources();
   }
 
   /**
-   * Search for sources in the registry
+   * Search for sources in the registry (always fetches fresh)
    * 
    * @param query - Search query (name, id, description, tags)
-   * @returns Matching registry entries
-   * 
-   * @example
-   * ```typescript
-   * const mangaSources = JoyBoy.searchSources('manga');
-   * const apiSources = JoyBoy.searchSources('api');
-   * ```
+   * @returns Promise of matching registry entries
    */
-  static searchSources(query: string): RegistrySource[] {
-    if (this.remoteCatalog) {
-      return this.remoteCatalog.searchSources(query);
-    }
-    return searchRegistry(query);
+  static async searchSources(query: string): Promise<RegistrySource[]> {
+    return this.getRemoteRegistry().searchSources(query);
   }
 
   /**
-   * Get source registry information
+   * Get source registry information (always fetches fresh)
    * 
    * @param sourceId - Source identifier
-   * @returns Registry entry or undefined if not found
+   * @returns Promise of registry entry or undefined
    */
-  static getSourceInfo(sourceId: string): RegistrySource | undefined {
-    if (this.remoteCatalog) {
-      return this.remoteCatalog.getSource(sourceId);
-    }
-    return getSourceById(sourceId);
+  static async getSourceInfo(sourceId: string): Promise<RegistrySource | undefined> {
+    return this.getRemoteRegistry().getSource(sourceId);
   }
 
   /**
    * Get information about installed sources
    * 
-   * @returns Array of installed source registry entries
+   * @returns Promise of installed source registry entries
    */
-  static getInstalledSourcesInfo(): RegistrySource[] {
+  static async getInstalledSourcesInfo(): Promise<RegistrySource[]> {
     const installed = this.registry.list().map(s => s.id);
-    return this.browseSources().filter(s => installed.includes(s.id));
+    const allSources = await this.browseSources();
+    return allSources.filter(s => installed.includes(s.id));
   }
 
   /**
    * Get information about available (not installed) sources
    * 
-   * @returns Array of available source registry entries
+   * @returns Promise of available source registry entries
    */
-  static getAvailableSourcesInfo(): RegistrySource[] {
+  static async getAvailableSourcesInfo(): Promise<RegistrySource[]> {
     const installed = this.registry.list().map(s => s.id);
-    return this.browseSources().filter(s => !installed.includes(s.id));
+    const allSources = await this.browseSources();
+    return allSources.filter(s => !installed.includes(s.id));
   }
 
   // ============================================================================
@@ -147,11 +122,11 @@ export class JoyBoy {
   // ============================================================================
 
   /**
-   * Install source from registry
+   * Install source from registry (always fetches fresh registry data)
    * 
    * @param sourceId - Source identifier from registry
    * @param onProgress - Optional progress callback
-   * @returns Loaded source instance
+   * @returns Promise of loaded source instance
    * 
    * @example
    * ```typescript
@@ -164,14 +139,15 @@ export class JoyBoy {
     sourceId: string,
     onProgress?: ProgressCallback
   ): Promise<Source> {
-    const entry = this.getSourceInfo(sourceId);
+    // Always fetch fresh registry data to get current integrity hash
+    const entry = await this.getSourceInfo(sourceId);
 
     if (!entry) {
       throw new Error(`Source not found in registry: ${sourceId}`);
     }
 
     try {
-      // Load source from the download URL
+      // Load source from the download URL with fresh integrity hash
       const source = await this.loader.loadFromRegistry(entry, onProgress);
 
       // Register in local registry
@@ -187,166 +163,29 @@ export class JoyBoy {
    * Uninstall a source
    * 
    * @param sourceId - Source identifier
-   * 
-   * @example
-   * ```typescript
-   * JoyBoy.uninstallSource('mangadex');
-   * ```
    */
   static uninstallSource(sourceId: string): void {
-    // Remove from local registry
     this.registry.unregister(sourceId);
-
-    // Clear cache
     this.loader.clearCache(sourceId);
   }
 
   /**
-   * Reinstall/update a source
+   * Reinstall/update a source (fetches fresh registry + source code)
    * 
    * @param sourceId - Source identifier
    * @param onProgress - Optional progress callback
-   * @returns Updated source instance
-   * 
-   * @example
-   * ```typescript
-   * const source = await JoyBoy.updateSource('mangadex');
-   * ```
+   * @returns Promise of updated source instance
    */
   static async updateSource(
     sourceId: string,
     onProgress?: ProgressCallback
   ): Promise<Source> {
-    // Clear cache first
+    // Clear all caches
     this.loader.clearCache(sourceId);
-
-    // Uninstall current version
     this.uninstallSource(sourceId);
-
-    // Install new version
-    return this.installSource(sourceId, onProgress);
-  }
-
-  /**
-   * Check for available updates
-   * 
-   * @returns Array of sources with updates available
-   * 
-   * @example
-   * ```typescript
-   * const updates = await JoyBoy.checkForUpdates();
-   * updates.forEach(source => {
-   *   console.log(`${source.name}: Update available to ${source.version}`);
-   * });
-   * ```
-   */
-  static async checkForUpdates(): Promise<RegistrySource[]> {
-    // Sync registry first
-    await this.syncRegistry();
-
-    // Get installed sources with their current info
-    const installed = this.registry.list();
-    const installedVersions = new Map(
-      installed.map(s => [s.id, s.version])
-    );
-
-    // Get latest versions from registry
-    const available = this.browseSources();
     
-    // Find sources with newer versions
-    return available.filter(source => {
-      const installedVersion = installedVersions.get(source.id);
-      if (!installedVersion) return false;
-      
-      // Simple version comparison (can be enhanced with semver)
-      return source.version !== installedVersion;
-    });
-  }
-
-  /**
-   * Install all available updates
-   * 
-   * @param onProgress - Optional progress callback (receives sourceId and progress)
-   * 
-   * @example
-   * ```typescript
-   * await JoyBoy.updateAll((sourceId, progress, status) => {
-   *   console.log(`${sourceId}: ${progress}% - ${status}`);
-   * });
-   * ```
-   */
-  static async updateAll(
-    onProgress?: (sourceId: string, progress: number, status: string) => void
-  ): Promise<void> {
-    const updates = await this.checkForUpdates();
-
-    for (const update of updates) {
-      try {
-        await this.updateSource(update.id, (progress, status) => {
-          onProgress?.(update.id, progress, status);
-        });
-      } catch (error) {
-        console.error(`Failed to update ${update.id}:`, error);
-      }
-    }
-  }
-
-  // ============================================================================
-  // DIRECT SOURCE LOADING (Existing Methods)
-  // ============================================================================
-
-  /**
-   * Load source directly (for development/testing)
-   * 
-   * @param source - Source instance, package name, or lazy loader
-   * @returns Loaded source instance
-   * 
-   * @example
-   * ```typescript
-   * // From instance
-   * await JoyBoy.loadSource(new MangaDexSource());
-   * 
-   * // From package (if published to NPM)
-   * await JoyBoy.loadSource('@joyboy/source-mangadex');
-   * 
-   * // From lazy loader
-   * await JoyBoy.loadSource(() => import('@joyboy/source-mangadex'));
-   * ```
-   */
-  static async loadSource(
-    source: Source | string | (() => Promise<any>)
-  ): Promise<Source> {
-    try {
-      let sourceInstance: Source;
-
-      if (typeof source === 'string') {
-        // Dynamic import from package name
-        const module = await import(/* @vite-ignore */ source);
-        const SourceClass = module.default;
-
-        if (!SourceClass) {
-          throw new Error(`No default export found in ${source}`);
-        }
-
-        sourceInstance = new SourceClass();
-      } else if (typeof source === 'function') {
-        // Lazy loader function
-        const module = await source();
-        const SourceClass = module.default;
-        sourceInstance = new SourceClass();
-      } else {
-        // Direct instance
-        sourceInstance = source;
-      }
-
-      // Validate and register
-      this.validateSource(sourceInstance);
-      this.registry.register(sourceInstance);
-
-      return sourceInstance;
-    } catch (error) {
-      throw new Error(`Failed to load source: ${(error as Error).message}`);
-    }
+    // Install with fresh data
+    return this.installSource(sourceId, onProgress);
   }
 
   // ============================================================================
@@ -359,12 +198,6 @@ export class JoyBoy {
    * @param id - Source identifier
    * @returns Source instance
    * @throws Error if source is not loaded
-   * 
-   * @example
-   * ```typescript
-   * const mangadex = JoyBoy.getSource('mangadex');
-   * const results = await mangadex.search('One Piece');
-   * ```
    */
   static getSource(id: string): Source {
     const source = this.registry.get(id);
@@ -383,14 +216,6 @@ export class JoyBoy {
    * List all loaded sources
    * 
    * @returns Array of loaded source instances
-   * 
-   * @example
-   * ```typescript
-   * const sources = JoyBoy.listSources();
-   * sources.forEach(source => {
-   *   console.log(`${source.name} (${source.id})`);
-   * });
-   * ```
    */
   static listSources(): Source[] {
     return this.registry.list();
@@ -401,13 +226,6 @@ export class JoyBoy {
    * 
    * @param id - Source identifier
    * @returns True if loaded
-   * 
-   * @example
-   * ```typescript
-   * if (JoyBoy.hasSource('mangadex')) {
-   *   const source = JoyBoy.getSource('mangadex');
-   * }
-   * ```
    */
   static hasSource(id: string): boolean {
     return this.registry.has(id);
@@ -439,16 +257,7 @@ export class JoyBoy {
    * 
    * @param query - Search query
    * @param sourceIds - Optional array of source IDs (default: all loaded)
-   * @returns Map of source ID to results
-   * 
-   * @example
-   * ```typescript
-   * const results = await JoyBoy.searchAll('One Piece');
-   * 
-   * for (const [sourceId, manga] of results) {
-   *   console.log(`${sourceId}: ${manga.length} results`);
-   * }
-   * ```
+   * @returns Promise of Map of source ID to results
    */
   static async searchAll(
     query: string,
@@ -480,12 +289,49 @@ export class JoyBoy {
   }
 
   // ============================================================================
-  // VALIDATION
+  // DIRECT SOURCE LOADING (For development/testing)
   // ============================================================================
 
   /**
-   * Validate source instance
+   * Load source directly (for development/testing)
+   * 
+   * @param source - Source instance, package name, or lazy loader
+   * @returns Promise of loaded source instance
    */
+  static async loadSource(
+    source: Source | string | (() => Promise<any>)
+  ): Promise<Source> {
+    try {
+      let sourceInstance: Source;
+
+      if (typeof source === 'string') {
+        const module = await import(/* @vite-ignore */ source);
+        const SourceClass = module.default;
+        if (!SourceClass) {
+          throw new Error(`No default export found in ${source}`);
+        }
+        sourceInstance = new SourceClass();
+      } else if (typeof source === 'function') {
+        const module = await source();
+        const SourceClass = module.default;
+        sourceInstance = new SourceClass();
+      } else {
+        sourceInstance = source;
+      }
+
+      this.validateSource(sourceInstance);
+      this.registry.register(sourceInstance);
+
+      return sourceInstance;
+    } catch (error) {
+      throw new Error(`Failed to load source: ${(error as Error).message}`);
+    }
+  }
+
+  // ============================================================================
+  // VALIDATION
+  // ============================================================================
+
   private static validateSource(source: any): asserts source is Source {
     const required = ['id', 'name', 'version', 'baseUrl', 'getMangaDetails', 'getChapters', 'getChapterPages'];
 

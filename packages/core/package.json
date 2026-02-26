@@ -1,8 +1,8 @@
 {
   "name": "@joyboy-parser/core",
-  "version": "1.1.7",
+  "version": "1.2.0",
   "type": "module",
-  "description": "Core SDK and runtime for the JoyBoy parser ecosystem",
+  "description": "Core SDK and runtime for JoyBoy parser - Remote-first, no caching",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",

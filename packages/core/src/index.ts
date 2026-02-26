@@ -1,10 +1,11 @@
 /**
- * @joyboy/core
- * Core SDK and runtime for the JoyBoy parser ecosystem
- * Integrated with GitHub-based source registry
+ * @joyboy-parser/core v1.2.0
+ * Core SDK and runtime for JoyBoy parser ecosystem
+ * Remote-first architecture - No local caching
  */
 
 // Export main runtime
+export { JoyBoy } from './runtime';
 
 // Export base classes
 export { BaseSource } from './base-source';
@@ -23,7 +24,6 @@ export { parseXml, smartParseXml, extractAllText, flattenXml } from './utils/xml
 export { GitHubSourceLoader } from './github-loader';
 export type { ProgressCallback } from './github-loader';
 
-export {JoyBoy} from './runtime'
 // Re-export types from @joyboy/types
 export type {
   Manga,
@@ -43,5 +43,6 @@ export { ErrorType, createSourceError } from '@joyboy-parser/types';
 // Re-export registry types for convenience
 export type {
   RegistrySource,
-  RegistryStats
 } from '@joyboy-parser/source-registry';
+
+export { REGISTRY_URLS } from '@joyboy-parser/source-registry';

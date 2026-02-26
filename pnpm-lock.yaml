@@ -74,6 +74,19 @@ importers:
         specifier: ^1.6.1
         version: 1.6.1(@types/node@20.19.25)
 
+  packages/joytest:
+    dependencies:
+      '@joyboy-parser/core':
+        specifier: workspace:*
+        version: link:../core
+      '@joyboy-parser/source-registry':
+        specifier: workspace:*
+        version: link:../source-registry
+    devDependencies:
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
   packages/source-registry:
     dependencies:
       '@joyboy-parser/types':
